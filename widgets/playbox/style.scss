@@ -1,5 +1,5 @@
 .playbox {
-    background: rgba( 0, 0, 0, 0.5 );
+    // background: rgba( 0, 0, 0, 0.5 );
 
     &__wrapper {
         display: flex;
@@ -9,6 +9,7 @@
         background: red;
         position: relative;
         width: 44px;
+        min-width: 44px;
         height: 44px;
 
         &__image {
@@ -21,12 +22,18 @@
     }
 
     &__meta {
-
+        &__text {
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 
     &__progress {
         width: 100%;
         height: 2px;
-        background: blue;
+        background-image: linear-gradient( to bottom, green, green );
+        background-repeat: no-repeat;
     }
 }

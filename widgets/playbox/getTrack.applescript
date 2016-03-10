@@ -19,7 +19,7 @@ try
 			else if musicapp is "Spotify" then
 				tell application "Spotify"
 					set {tname, aname, alname, rate, tduration} to {name, artist, album, popularity, duration} of current track
-					set tpos to my replace(player position as string, ".", "")
+					set tpos to player position
 				end tell
 			end if
 			set stardisplay to my rating(rate)

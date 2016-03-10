@@ -16,7 +16,18 @@ app.on( 'window-all-closed', function() {
 });
 
 app.on( 'ready', function() {
-    mainWindow = new BrowserWindow( { width: 800, height: 500 } );
+    const electronScreen = electron.screen;
+    const size = electronScreen.getPrimaryDisplay().workAreaSize;
+
+    mainWindow = new BrowserWindow({
+        type: 'desktop',
+        transparent: true,
+        frame: false,
+        resizable: false,
+        movable: false,
+        width: size.width,
+        height: size.height
+    });
 
     mainWindow.loadURL( 'file://' + __dirname + '/dist/index.html' );
 
@@ -29,7 +40,7 @@ app.on( 'ready', function() {
         console.log( stdout );
     });
 
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 
     mainWindow.on( 'closed', function() {
         mainWindow = null;
