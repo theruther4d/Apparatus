@@ -43,7 +43,7 @@ gulp.task( 'scripts', () => {
     return gulp.src( SCRIPTS_GLOB )
         .pipe( babel() )
         .pipe( concat( 'scripts.js' ) )
-        .pipe( ugly() )
+        // .pipe( ugly() )
         .pipe( gulp.dest( OUTPUT_DIR ) );
 });
 

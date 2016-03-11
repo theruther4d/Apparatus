@@ -1,5 +1,9 @@
 .playbox {
-    // background: rgba( 0, 0, 0, 0.5 );
+    background: rgba( 0, 0, 0, 0.2 );
+    width: 180px;
+    position: absolute;
+    bottom: 400px;
+    right: 0;
 
     &__wrapper {
         display: flex;
@@ -18,6 +22,38 @@
             right: 0;
             bottom: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
+
+            // add image to bottom
+            // fade out image1
+
+            // add image to 1
+            // fade in image1
+
+            &.top {
+                z-index: 2;
+
+                .will-transition & {
+                    transition: opacity 0.25s ease;
+                }
+
+                .fade-out.transitioning & {
+                    opacity: 0;
+                }
+
+                .fade-in.transitioning & {
+                    opacity: 1;
+                }
+            }
+
+            &.bottom {
+                z-index: 1;
+                //
+                // .transitioning & {
+                //     z-index: 2;
+                // }
+            }
         }
     }
 

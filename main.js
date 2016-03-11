@@ -20,13 +20,15 @@ app.on( 'ready', function() {
     const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
     mainWindow = new BrowserWindow({
-        type: 'desktop',
-        transparent: true,
-        frame: false,
-        resizable: false,
-        movable: false,
-        width: size.width,
-        height: size.height
+        // type: 'desktop',
+        // transparent: true,
+        // frame: false,
+        // resizable: false,
+        // movable: false,
+        // width: size.width,
+        // height: size.height
+        width: 500,
+        height: 600
     });
 
     mainWindow.loadURL( 'file://' + __dirname + '/dist/index.html' );
