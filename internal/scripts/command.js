@@ -1,7 +1,4 @@
 'use strict';
-import osascript from 'osascript';
-import childProcess from 'child_process';
-import fs from 'fs';
 const osascript = require( 'osascript' );
 const exec = require( 'child_process' ).exec;
 const fs = require( 'fs' );
@@ -190,8 +187,6 @@ if (process.platform == 'darwin') {
 var menu = Menu.buildFromTemplate(template);
 Menu.setApplicationMenu(menu);
 
-
-const exec = childProcess.exec;
 
 let commands = {};
 let execs = {};

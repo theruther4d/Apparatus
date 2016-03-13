@@ -42,24 +42,26 @@ gulp.task( 'html', () => {
         .pipe( concat( 'index.html' ) )
         .pipe( insert.prepend( fs.readFileSync( `${__dirname}/internal/html/head.html` ) ) )
         .pipe( insert.append( fs.readFileSync( `${__dirname}/internal/html/foot.html` ) ) )
-        .pipe( gulp.dest( OUTPUT_DIR ) )
-        .pipe( browserSync.stream() );
+        .pipe( gulp.dest( OUTPUT_DIR ) );
+        // .pipe( browserSync.stream() );
 });
 
 gulp.task( 'css', () => {
     return gulp.src( CSS_GLOB )
-        .pipe( concat( 'style.scss' ) )
         .pipe( scss() )
+        .pipe( concat( 'style.scss' ) )
         .pipe( prefix( ['last 2 version', '> 1%', 'ie 8', 'ie 7', 'Firefox > 15'], { cascade: true } ) )
         .pipe( cssMin() )
         .pipe( rename( 'style.css' ) )
-        .pipe( gulp.dest( OUTPUT_DIR ) )
-        .pipe( browserSync.stream() );
+        .pipe( gulp.dest( OUTPUT_DIR ) );
+        // .pipe( browserSync.stream() );
 });
 
 gulp.task( 'scripts', () => {
     return gulp.src( SCRIPTS_GLOB )
-        .pipe( babel() )
+        .pipe( babel( {
+            presets: ['es2015']
+        } ) )
         .pipe( concat( 'scripts.js' ) )
         // .pipe( ugly() )
         .pipe( gulp.dest( OUTPUT_DIR ) );

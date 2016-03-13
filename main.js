@@ -8,11 +8,24 @@ const chokidar = require( 'chokidar' );
 const fs = require( 'fs' );
 const widgetDirectory = `${app.getPath( 'userData' )}/widgets`;
 
+console.log( `widgetDirectory: ${widgetDirectory}` );
+
 // Make the widgets directory if it doesn't exist:
 if( !fs.existsSync( widgetDirectory ) ) {
     console.log( 'making widget directory' );
+
     fs.mkdir( widgetDirectory, ( err ) => {
-        console.log( err );
+        if( err ) {
+            console.log( err );
+            return;
+        }
+
+        // symlink here:
+        fs.symlink( `${__dirname}/node_modules`, `${widgetDirectory}/node_modules`, ( err ) => {
+            if( err ) {
+                console.log( err );
+            }
+        });
     });
 }
 
@@ -56,9 +69,9 @@ app.on( 'ready', () => {
             mainWindow.reload();
         });
 
-    exec( `gulp ubershit --directory='${widgetDirectory}'`, ( err, stdout, stderr ) => {
-        console.log( stdout );
-    });
+    // exec( `gulp ubershit --directory='${widgetDirectory}'`, ( err, stdout, stderr ) => {
+    //     console.log( stdout );
+    // });
 
     mainWindow.on( 'closed', function() {
         mainWindow = null;
