@@ -5,17 +5,27 @@ const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 const exec = require( 'child_process' ).exec;
 const chokidar = require( 'chokidar' );
+const fs = require( 'fs' );
+const widgetDirectory = `${app.getPath( 'userData' )}/widgets`;
+
+// Make the widgets directory if it doesn't exist:
+if( !fs.existsSync( widgetDirectory ) ) {
+    console.log( 'making widget directory' );
+    fs.mkdir( widgetDirectory, ( err ) => {
+        console.log( err );
+    });
+}
 
 var mainWindow = null;
 
-app.on( 'window-all-closed', function() {
+app.on( 'window-all-closed', () => {
     if( process.platform != 'darwin' ) {
         // quit gulp?
         app.quit();
     }
 });
 
-app.on( 'ready', function() {
+app.on( 'ready', () => {
     const electronScreen = electron.screen;
     const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
@@ -31,18 +41,24 @@ app.on( 'ready', function() {
         height: 600
     });
 
-    mainWindow.loadURL( 'file://' + __dirname + '/dist/index.html' );
+    mainWindow.loadURL( 'file://' + widgetDirectory + '/dist/index.html' );
 
-    const watcher = chokidar.watch( `${__dirname}/dist/*` );
-    watcher.on( 'change', ( path ) => {
-        mainWindow.reload();
+    const watcher = chokidar.watch( `${widgetDirectory}`, {
+        ignoreInitial: true,
+        persistent: true
     });
 
-    exec( 'gulp', ( err, stdout, stderr ) => {
+    watcher
+        .on( 'change', ( path ) => {
+            mainWindow.reload();
+        })
+        .on( 'add', ( path ) => {
+            mainWindow.reload();
+        });
+
+    exec( `gulp ubershit --directory='${widgetDirectory}'`, ( err, stdout, stderr ) => {
         console.log( stdout );
     });
-
-    // mainWindow.webContents.openDevTools();
 
     mainWindow.on( 'closed', function() {
         mainWindow = null;
