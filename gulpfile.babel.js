@@ -17,17 +17,27 @@ import runSequence from 'run-sequence';
 
 const args = yargs.argv;
 
-let OUTPUT_DIR, HTML_GLOB, CSS_GLOB, SCRIPTS_GLOB;
-
-let widget_dir = null;
+let OUTPUT_DIR, HTML_GLOB, CSS_GLOB, SCRIPTS_GLOB, WIDGET_DIR;
 
 gulp.task( 'ubershit', () => {
-    widget_dir = args.directory;
+    WIDGET_DIR = `${args.directory}/widgets`
+    OUTPUT_DIR = `${args.directory}/dist`;
 
-    OUTPUT_DIR = `${widget_dir}/dist/`;
-    HTML_GLOB = `${widget_dir}/**/**/*.html`;
-    CSS_GLOB = ['internal/css/reset.scss', 'internal/css/defaults.scss', `${widget_dir}/**/**/*.scss`];
-    SCRIPTS_GLOB = ['internal/scripts/command.js', `${widget_dir}/**/*.js`];
+    console.log( `gulp widget directory: ${WIDGET_DIR}` );
+    console.log( `gulp output directory: ${OUTPUT_DIR}` );
+
+    // Need to ignore the dist directory
+    // send the baseDir to gulp
+    // widgets:
+    // application support/ubershit/widgets
+    // dist:
+    // application support/ubershit/dist
+    // node_modules:
+    // application support/ubershit/node_modules
+    // OUTPUT_DIR = `${WIDGET_DIR}/dist/`;
+    HTML_GLOB = `${WIDGET_DIR}/**/**/*.html`;
+    CSS_GLOB = ['internal/css/reset.scss', 'internal/css/defaults.scss', `${WIDGET_DIR}/**/**/*.scss`];
+    SCRIPTS_GLOB = ['internal/scripts/command.js', `${WIDGET_DIR}/**/*.js`];
 
     runSequence( ['html', 'css', 'scripts'] );
 

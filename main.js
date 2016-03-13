@@ -6,22 +6,36 @@ const BrowserWindow = electron.BrowserWindow;
 const exec = require( 'child_process' ).exec;
 const chokidar = require( 'chokidar' );
 const fs = require( 'fs' );
-const widgetDirectory = `${app.getPath( 'userData' )}/widgets`;
-
-console.log( `widgetDirectory: ${widgetDirectory}` );
+const ubershitDirectory = app.getPath( 'userData' );
+const widgetDirectory = `${ubershitDirectory}/widgets`;
+const distDirectory = `${ubershitDirectory}/dist`;
+const npmDirectory = `${ubershitDirectory}/node_modules`;
 
 // Make the widgets directory if it doesn't exist:
 if( !fs.existsSync( widgetDirectory ) ) {
-    console.log( 'making widget directory' );
-
     fs.mkdir( widgetDirectory, ( err ) => {
         if( err ) {
             console.log( err );
             return;
         }
+    });
+}
 
-        // symlink here:
-        fs.symlink( `${__dirname}/node_modules`, `${widgetDirectory}/node_modules`, ( err ) => {
+// Make the dist directory if it doesn't exist:
+if( !fs.existsSync( distDirectory ) ) {
+    fs.mkdir( distDirectory, ( err ) => {
+        if( err ) {
+            console.log( err );
+            return;
+        }
+    });
+}
+
+// Make the node_modules directory if it doesn't exist:
+if( !fs.existsSync( npmDirectory) ) {
+    fs.mkdir( npmDirectory, ( err ) => {
+        // Symlink the babel-preset-es2015 module:
+        fs.symlink( `${__dirname}/node_modules/babel-preset-es2015`, `${npmDirectory}/babel-preset-es2015`, ( err ) => {
             if( err ) {
                 console.log( err );
             }
@@ -54,24 +68,26 @@ app.on( 'ready', () => {
         height: 600
     });
 
-    mainWindow.loadURL( 'file://' + widgetDirectory + '/dist/index.html' );
+    mainWindow.loadURL( `file://${distDirectory}/index.html` );
 
-    const watcher = chokidar.watch( `${widgetDirectory}`, {
+    const watcher = chokidar.watch( `${distDirectory}`, {
         ignoreInitial: true,
         persistent: true
     });
 
     watcher
         .on( 'change', ( path ) => {
+            console.log( 'reloading' );
             mainWindow.reload();
         })
         .on( 'add', ( path ) => {
+            console.log( 'reloading' );
             mainWindow.reload();
         });
 
-    // exec( `gulp ubershit --directory='${widgetDirectory}'`, ( err, stdout, stderr ) => {
-    //     console.log( stdout );
-    // });
+    exec( `gulp ubershit --directory='${ubershitDirectory}'`, ( err, stdout, stderr ) => {
+        console.log( stdout );
+    });
 
     mainWindow.on( 'closed', function() {
         mainWindow = null;
