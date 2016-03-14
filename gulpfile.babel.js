@@ -9,6 +9,7 @@ import prefix from 'gulp-autoprefixer';
 import ugly from 'gulp-uglify';
 import babel from 'gulp-babel';
 import insert from 'gulp-insert';
+import replace from 'gulp-replace';
 import browserSync from 'browser-sync';
 import del from 'del';
 import fs from 'fs';
@@ -17,29 +18,21 @@ import runSequence from 'run-sequence';
 
 const args = yargs.argv;
 
-let OUTPUT_DIR, HTML_GLOB, CSS_GLOB, SCRIPTS_GLOB, WIDGET_DIR;
+let BASE_DIR, OUTPUT_DIR, HTML_GLOB, CSS_GLOB, SCRIPTS_GLOB, WIDGET_DIR;
 
 gulp.task( 'ubershit', () => {
-    WIDGET_DIR = `${args.directory}/widgets`
+    BASE_DIR = args.directory;
+    WIDGET_DIR = `${args.directory}/widgets`;
     OUTPUT_DIR = `${args.directory}/dist`;
 
     console.log( `gulp widget directory: ${WIDGET_DIR}` );
     console.log( `gulp output directory: ${OUTPUT_DIR}` );
 
-    // Need to ignore the dist directory
-    // send the baseDir to gulp
-    // widgets:
-    // application support/ubershit/widgets
-    // dist:
-    // application support/ubershit/dist
-    // node_modules:
-    // application support/ubershit/node_modules
-    // OUTPUT_DIR = `${WIDGET_DIR}/dist/`;
     HTML_GLOB = `${WIDGET_DIR}/**/**/*.html`;
     CSS_GLOB = ['internal/css/reset.scss', 'internal/css/defaults.scss', `${WIDGET_DIR}/**/**/*.scss`];
     SCRIPTS_GLOB = ['internal/scripts/command.js', `${WIDGET_DIR}/**/*.js`];
 
-    runSequence( ['html', 'css', 'scripts'] );
+    runSequence( 'clean', ['html', 'css', 'scripts'] );
 
     gulp.watch( HTML_GLOB, ['html'] );
     gulp.watch( CSS_GLOB, ['css'] );
@@ -52,6 +45,7 @@ gulp.task( 'html', () => {
         .pipe( concat( 'index.html' ) )
         .pipe( insert.prepend( fs.readFileSync( `${__dirname}/internal/html/head.html` ) ) )
         .pipe( insert.append( fs.readFileSync( `${__dirname}/internal/html/foot.html` ) ) )
+        .pipe( replace( 'WIDGET_DIR', BASE_DIR ) )
         .pipe( gulp.dest( OUTPUT_DIR ) );
         // .pipe( browserSync.stream() );
 });
@@ -83,9 +77,6 @@ gulp.task( 'watch', () => {
     gulp.watch( SCRIPTS_GLOB, ['scripts'] );
 });
 
-//
-// gulp.task( 'default', ['html', 'css', 'scripts'], () => {
-//     gulp.watch( HTML_GLOB, ['html'] );
-//     gulp.watch( CSS_GLOB, ['css'] );
-//     gulp.watch( SCRIPTS_GLOB, ['scripts'] );
-// });
+gulp.task( 'clean', () => {
+    del( `${OUTPUT_DIR}/**`, `!${OUTPUT_DIR}` );
+});
