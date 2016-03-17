@@ -7,6 +7,11 @@ const remote = electron.remote;
 const Menu = remote.Menu;
 const MenuItem = remote.MenuItem;
 const shell = electron.shell;
+const ipc = electron.ipcRenderer;
+
+ipc.on( 'ping', ( e, message ) => {
+    console.log( 'message from the main process: ', message );
+});
 
 var template = [
   {

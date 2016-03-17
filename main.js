@@ -31,15 +31,37 @@ if( !fs.existsSync( distDirectory ) ) {
     });
 }
 
+const makeNodeModuleSymlinks = ( modules ) => {
+    modules.forEach( ( module ) => {
+        fs.symlink( `${__dirname}/node_modules/${module}`, `${npmDirectory}/${module}`, ( err ) => {
+            if( err ) {
+                console.log( `error symlinking module: ${module}: `, err );
+            }
+        });
+    });
+};
+
+
+// fs.symlink( '/usr/local/bin/gulp', '/usr/bin/gulp', ( err ) => {
+//     console.log( 'error symlinking usr/local/bin/gulp: ', err );
+// });
+
 // Make the node_modules directory if it doesn't exist:
 if( !fs.existsSync( npmDirectory) ) {
     fs.mkdir( npmDirectory, ( err ) => {
-        // Symlink the babel-preset-es2015 module:
-        fs.symlink( `${__dirname}/node_modules/babel-preset-es2015`, `${npmDirectory}/babel-preset-es2015`, ( err ) => {
-            if( err ) {
-                console.log( err );
-            }
-        });
+        makeNodeModuleSymlinks([
+            'babel-preset-es2015',
+            'osascript',
+            'gulp',
+            'gulp-autoprefixer',
+            'gulp-babel',
+            'gulp-concat',
+            'gulp-insert',
+            'gulp-minify-css',
+            'gulp-rename',
+            'gulp-sass',
+            'gulp-uglify'
+        ]);
     });
 }
 
@@ -70,23 +92,44 @@ app.on( 'ready', () => {
 
     mainWindow.loadURL( `file://${distDirectory}/index.html` );
 
-    const watcher = chokidar.watch( `${distDirectory}`, {
-        ignoreInitial: true,
-        persistent: true
+    mainWindow.webContents.openDevTools();
+
+    mainWindow.webContents.on( 'did-finish-load', () => {
+        mainWindow.webContents.send( 'ping', 'opening message!' );
     });
 
-    watcher
-        .on( 'change', ( path ) => {
-            console.log( 'reloading' );
-            mainWindow.reload();
-        })
-        .on( 'add', ( path ) => {
-            console.log( 'reloading' );
-            mainWindow.reload();
-        });
+    // const watcher = chokidar.watch( `${distDirectory}`, {
+    //     ignoreInitial: true,
+    //     persistent: true
+    // });
+    //
+    // watcher
+    //     .on( 'change', ( path ) => {
+    //         console.log( 'reloading' );
+    //         mainWindow.reload();
+    //     })
+    //     .on( 'add', ( path ) => {
+    //         console.log( 'reloading' );
+    //         mainWindow.reload();
+    //     });
+
+    const cleanString = ( str ) => {
+        if( typeof str === 'string' ) {
+            return str.replace(/(\r\n|\n|\r)/gm,"");
+        } else {
+            return 'NA';
+        }
+    };
 
     exec( `gulp ubershit --directory='${ubershitDirectory}'`, ( err, stdout, stderr ) => {
-        console.log( stdout );
+        // mainWindow.webContents.on( 'did-finish-load', () => {
+            err = cleanString( err );
+            stdout = cleanString( stdout );
+            stderr = cleanString( stderr );
+            mainWindow.webContents.executeJavaScript( 'console.log(\"err: ' + err + '\")' );
+            mainWindow.webContents.executeJavaScript( 'console.log(\"stdout: ' + stdout + '\")' );
+            mainWindow.webContents.executeJavaScript( 'console.log(\"stderr: ' + stderr + '\")' );
+        // });
     });
 
     mainWindow.on( 'closed', function() {

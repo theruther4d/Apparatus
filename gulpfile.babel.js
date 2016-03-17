@@ -10,7 +10,6 @@ import ugly from 'gulp-uglify';
 import babel from 'gulp-babel';
 import insert from 'gulp-insert';
 import replace from 'gulp-replace';
-import browserSync from 'browser-sync';
 import del from 'del';
 import fs from 'fs';
 import yargs from 'yargs';
@@ -32,11 +31,11 @@ gulp.task( 'ubershit', () => {
     CSS_GLOB = ['internal/css/reset.scss', 'internal/css/defaults.scss', `${WIDGET_DIR}/**/**/*.scss`];
     SCRIPTS_GLOB = ['internal/scripts/command.js', `${WIDGET_DIR}/**/*.js`];
 
-    runSequence( 'clean', ['html', 'css', 'scripts'] );
+    runSequence( /*'clean', */['html', 'css', 'scripts'] );
 
-    gulp.watch( HTML_GLOB, ['html'] );
-    gulp.watch( CSS_GLOB, ['css'] );
-    gulp.watch( SCRIPTS_GLOB, ['scripts'] );
+    // gulp.watch( HTML_GLOB, ['html'] );
+    // gulp.watch( CSS_GLOB, ['css'] );
+    // gulp.watch( SCRIPTS_GLOB, ['scripts'] );
 });
 
 gulp.task( 'html', () => {
@@ -47,10 +46,10 @@ gulp.task( 'html', () => {
         .pipe( insert.append( fs.readFileSync( `${__dirname}/internal/html/foot.html` ) ) )
         .pipe( replace( 'WIDGET_DIR', BASE_DIR ) )
         .pipe( gulp.dest( OUTPUT_DIR ) );
-        // .pipe( browserSync.stream() );
 });
 
 gulp.task( 'css', () => {
+    console.log( `css outputting to ${OUTPUT_DIR}` );
     return gulp.src( CSS_GLOB )
         .pipe( scss() )
         .pipe( concat( 'style.scss' ) )
@@ -58,10 +57,10 @@ gulp.task( 'css', () => {
         .pipe( cssMin() )
         .pipe( rename( 'style.css' ) )
         .pipe( gulp.dest( OUTPUT_DIR ) );
-        // .pipe( browserSync.stream() );
 });
 
 gulp.task( 'scripts', () => {
+    console.log( `scripts outputting to ${OUTPUT_DIR}` );
     return gulp.src( SCRIPTS_GLOB )
         .pipe( babel( {
             presets: ['es2015']
@@ -78,5 +77,6 @@ gulp.task( 'watch', () => {
 });
 
 gulp.task( 'clean', () => {
+    console.log( 'cleaning up dist directory' );
     del( `${OUTPUT_DIR}/**`, `!${OUTPUT_DIR}` );
 });
