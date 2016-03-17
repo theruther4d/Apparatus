@@ -31,4 +31,3 @@ window.execFromFile = function( file, callback, interval ) {
 window.WIDGET_DIR = __dirname.split( '/' );
 window.WIDGET_DIR.splice( -1, 1 );
 window.WIDGET_DIR = `${WIDGET_DIR.join( '/' )}/widgets`
-// window.WIDGET_DIR = `${__dirname.split( '/' ).splice( -1, 1 ).join( '/' )}/widgets`;
