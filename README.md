@@ -1,6 +1,8 @@
 # Ubershit
 A mac app that let's you create and display widgets on your desktop. Build widgets using web languages that you already know and love, so you can focus on having fun.
 
+## [Download](https://github.com/theruther4d/Ubershit/releases/download/0.2.0/ubershit-darwin-x64.0.2.0.zip)
+
 ## Building
 ### Clone the repo:
 ```sh
