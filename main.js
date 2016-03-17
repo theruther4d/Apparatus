@@ -36,7 +36,7 @@ gulp.task( 'ubershit', () => {
     console.log( `gulp widget directory: ${WIDGET_DIR}` );
     console.log( `gulp output directory: ${OUTPUT_DIR}` );
 
-    runSequence( 'clean', ['html', 'css', 'scripts'], 'stream' );
+    runSequence( ['html', 'css', 'scripts'], 'stream' );
 });
 
 gulp.task( 'stream', () => {
@@ -89,10 +89,6 @@ gulp.task( 'watch', () => {
     gulp.watch( HTML_GLOB, ['html'] );
     gulp.watch( CSS_GLOB, ['css'] );
     gulp.watch( SCRIPTS_GLOB, ['scripts'] );
-});
-
-gulp.task( 'clean', () => {
-    del( `${OUTPUT_DIR}/**`, `!${OUTPUT_DIR}` );
 });
 
 
@@ -170,7 +166,7 @@ app.on( 'ready', () => {
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
 
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     mainWindow.webContents.on( 'did-finish-load', () => {
         mainWindow.webContents.send( 'ping', 'opening message!' );
