@@ -9,7 +9,6 @@ const BrowserWindow = electron.BrowserWindow;
 const shell = electron.shell;
 
 // Dependencies:
-const exec = require( 'child_process' ).exec;
 const chokidar = require( 'chokidar' );
 const fs = require( 'fs' );
 const gulp = require( 'gulp' );
@@ -29,10 +28,33 @@ const WIDGET_DIR = `${BASE_DIR}/widgets`;
 const OUTPUT_DIR = `${BASE_DIR}/dist`;
 const NPM_DIR = `${BASE_DIR}/node_modules`;
 
+const getWidgets = () => {
+    let widgets = [];
+    const foundWidgets = fs.readdirSync( WIDGET_DIR );
+
+    foundWidgets.forEach( ( widget ) => {
+        if( widget.charCodeAt( 0 ) !== 46 ) {
+            widgets.push( widget );
+        }
+    });
+
+    return widgets;
+};
+
+const generateWidgetBlobs = ( widgets, blob ) => {
+    let blobs = [];
+    widgets.forEach( ( widget ) => {
+        blobs.push( `${WIDGET_DIR}/${widget}/${blob}` );
+    });
+
+    return blobs;
+};
+
 // File Globs
-const HTML_GLOB = `${WIDGET_DIR}/**/**/dist/*.html`;
-const CSS_GLOB = [/*'internal/css/reset.scss', 'internal/css/defaults.scss',*/ `${WIDGET_DIR}/**/**/dist/*.scss`];
-const SCRIPTS_GLOB = [/*'internal/scripts/command.js', */ `${WIDGET_DIR}/**/**/dist/*.js`];
+const widgets = getWidgets();
+const HTML_GLOB = generateWidgetBlobs( widgets, '*.html' );
+const CSS_GLOB = ['includes/css/style.css', ...generateWidgetBlobs( widgets, '*.css' )];
+const SCRIPTS_GLOB = ['includes/scripts/scripts.js', ...generateWidgetBlobs( widgets, '*.js' )];
 
 // Gulp tasks:
 gulp.task( 'ubershit', () => {
@@ -54,17 +76,15 @@ gulp.task( 'stream', () => {
 });
 
 gulp.task( 'html', () => {
-    // console.log( `html outputting to ${OUTPUT_DIR}` );
     return gulp.src( HTML_GLOB )
         .pipe( concat( 'index.html' ) )
-        // .pipe( insert.prepend( fs.readFileSync( `${__dirname}/internal/html/head.html` ) ) )
-        // .pipe( insert.append( fs.readFileSync( `${__dirname}/internal/html/foot.html` ) ) )
+        .pipe( insert.prepend( fs.readFileSync( `${__dirname}/includes/html/head.html` ) ) )
+        .pipe( insert.append( fs.readFileSync( `${__dirname}/includes/html/foot.html` ) ) )
         .pipe( replace( 'WIDGET_DIR', BASE_DIR ) )
         .pipe( gulp.dest( OUTPUT_DIR ) );
 });
 
 gulp.task( 'css', () => {
-    // console.log( `css outputting to ${OUTPUT_DIR}` );
     return gulp.src( CSS_GLOB )
         .pipe( concat( 'style.scss' ) )
         .pipe( rename( 'style.css' ) )
@@ -72,7 +92,6 @@ gulp.task( 'css', () => {
 });
 
 gulp.task( 'scripts', () => {
-    // console.log( `scripts outputting to ${OUTPUT_DIR}` );
     return gulp.src( SCRIPTS_GLOB )
         .pipe( concat( 'scripts.js' ) )
         .pipe( gulp.dest( OUTPUT_DIR ) );
@@ -172,7 +191,7 @@ app.on( 'ready', () => {
     ]);
 
     // Create the notification bar icon:
-    navIcon = new Tray( `${__dirname}/internal/images/dummy-icon.png` );
+    navIcon = new Tray( `${__dirname}/includes/images/dummy-icon.png` );
     navIcon.setToolTip( 'Ubershit' );
     navIcon.setContextMenu( contextMenu );
 
@@ -180,13 +199,15 @@ app.on( 'ready', () => {
     app.dock.hide();
 
     mainWindow = new BrowserWindow({
-        type: 'desktop',
-        transparent: true,
-        frame: false,
-        resizable: false,
-        movable: false,
-        width: size.width,
-        height: size.height
+        // type: 'desktop',
+        // transparent: true,
+        // frame: false,
+        // resizable: false,
+        // movable: false,
+        // width: size.width,
+        // height: size.height
+        width: 1000,
+        height: 500
     });
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
@@ -198,11 +219,9 @@ app.on( 'ready', () => {
 
     watcher
         .on( 'change', ( path ) => {
-            console.log( 'reloading' );
             mainWindow.reload();
         })
         .on( 'add', ( path ) => {
-            console.log( 'reloading' );
             mainWindow.reload();
         });
 
