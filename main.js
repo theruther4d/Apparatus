@@ -53,8 +53,8 @@ const generateWidgetBlobs = ( widgets, blob ) => {
 // File Globs
 const widgets = getWidgets();
 const HTML_GLOB = generateWidgetBlobs( widgets, '*.html' );
-const CSS_GLOB = ['includes/css/style.css', ...generateWidgetBlobs( widgets, '*.css' )];
-const SCRIPTS_GLOB = ['includes/scripts/scripts.js', ...generateWidgetBlobs( widgets, '*.js' )];
+const CSS_GLOB = [`${__dirname}/includes/css/style.css`, ...generateWidgetBlobs( widgets, '*.css' )];
+const SCRIPTS_GLOB = [`${__dirname}/includes/scripts/scripts.js`, ...generateWidgetBlobs( widgets, '*.js' )];
 
 // Gulp tasks:
 gulp.task( 'ubershit', () => {
@@ -97,26 +97,20 @@ gulp.task( 'scripts', () => {
         .pipe( gulp.dest( OUTPUT_DIR ) );
 });
 
+const mkDirIfNotExists = ( directory ) => {
+    if( !fs.existsSync( directory ) ) {
+        fs.mkdir( directory, ( err ) => {
+            if( err ) {
+                console.log( err );
+                return;
+            }
+        });
+    }
+};
 
-// Make the widgets directory if it doesn't exist:
-if( !fs.existsSync( WIDGET_DIR ) ) {
-    fs.mkdir( WIDGET_DIR, ( err ) => {
-        if( err ) {
-            console.log( err );
-            return;
-        }
-    });
-}
-
-// Make the dist directory if it doesn't exist:
-if( !fs.existsSync( OUTPUT_DIR ) ) {
-    fs.mkdir( OUTPUT_DIR, ( err ) => {
-        if( err ) {
-            console.log( err );
-            return;
-        }
-    });
-}
+// Make the WIDGET_DIR and OUTPUT_DIR if they don't exist:
+mkDirIfNotExists( WIDGET_DIR );
+mkDirIfNotExists( OUTPUT_DIR );
 
 const makeNodeModuleSymlinks = ( modules ) => {
     modules.forEach( ( module ) => {
