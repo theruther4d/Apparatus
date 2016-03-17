@@ -1,15 +1,12 @@
 'use strict';
 
+// Dependencies:
 const electron = require( 'electron' );
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 const exec = require( 'child_process' ).exec;
 const chokidar = require( 'chokidar' );
 const fs = require( 'fs' );
-const ubershitDirectory = app.getPath( 'userData' );
-const widgetDirectory = `${ubershitDirectory}/widgets`;
-const distDirectory = `${ubershitDirectory}/dist`;
-const npmDirectory = `${ubershitDirectory}/node_modules`;
 const gulp = require( 'gulp' );
 const concat = require( 'gulp-concat' );
 const scss = require( 'gulp-sass' );
@@ -24,23 +21,19 @@ const del = require( 'del' );
 const yargs = require( 'yargs' );
 const runSequence = require( 'run-sequence' );
 
-let BASE_DIR, OUTPUT_DIR, HTML_GLOB, CSS_GLOB, SCRIPTS_GLOB, WIDGET_DIR;
+// Path constants:
+const BASE_DIR = app.getPath( 'userData' );
+const WIDGET_DIR = `${BASE_DIR}/widgets`;
+const OUTPUT_DIR = `${BASE_DIR}/dist`;
+const HTML_GLOB = `${WIDGET_DIR}/**/**/*.html`;
+const CSS_GLOB = ['internal/css/reset.scss', 'internal/css/defaults.scss', `${WIDGET_DIR}/**/**/*.scss`];
+const SCRIPTS_GLOB = ['internal/scripts/command.js', `${WIDGET_DIR}/**/*.js`];
+const npmDirectory = `${BASE_DIR}/node_modules`;
 
+// Gulp tasks:
 gulp.task( 'ubershit', () => {
-    // BASE_DIR = args.directory;
-    // WIDGET_DIR = `${args.directory}/widgets`;
-    // OUTPUT_DIR = `${args.directory}/dist`;
-
-    BASE_DIR = '/Users/josh/Library/Application\ Support/ubershit';
-    WIDGET_DIR = `/Users/josh/Library/Application\ Support/ubershit/widgets`;
-    OUTPUT_DIR = `/Users/josh/Library/Application\ Support/ubershit/dist`;
-
     console.log( `gulp widget directory: ${WIDGET_DIR}` );
     console.log( `gulp output directory: ${OUTPUT_DIR}` );
-
-    HTML_GLOB = `${WIDGET_DIR}/**/**/*.html`;
-    CSS_GLOB = ['internal/css/reset.scss', 'internal/css/defaults.scss', `${WIDGET_DIR}/**/**/*.scss`];
-    SCRIPTS_GLOB = ['internal/scripts/command.js', `${WIDGET_DIR}/**/*.js`];
 
     runSequence( /*'clean', */['html', 'css', 'scripts'] );
 
@@ -88,14 +81,13 @@ gulp.task( 'watch', () => {
 });
 
 gulp.task( 'clean', () => {
-    console.log( 'cleaning up dist directory' );
     del( `${OUTPUT_DIR}/**`, `!${OUTPUT_DIR}` );
 });
 
 
 // Make the widgets directory if it doesn't exist:
-if( !fs.existsSync( widgetDirectory ) ) {
-    fs.mkdir( widgetDirectory, ( err ) => {
+if( !fs.existsSync( WIDGET_DIR ) ) {
+    fs.mkdir( WIDGET_DIR, ( err ) => {
         if( err ) {
             console.log( err );
             return;
@@ -104,8 +96,8 @@ if( !fs.existsSync( widgetDirectory ) ) {
 }
 
 // Make the dist directory if it doesn't exist:
-if( !fs.existsSync( distDirectory ) ) {
-    fs.mkdir( distDirectory, ( err ) => {
+if( !fs.existsSync( OUTPUT_DIR ) ) {
+    fs.mkdir( OUTPUT_DIR, ( err ) => {
         if( err ) {
             console.log( err );
             return;
@@ -122,11 +114,6 @@ const makeNodeModuleSymlinks = ( modules ) => {
         });
     });
 };
-
-
-// fs.symlink( '/usr/local/bin/gulp', '/usr/bin/gulp', ( err ) => {
-//     console.log( 'error symlinking usr/local/bin/gulp: ', err );
-// });
 
 // Make the node_modules directory if it doesn't exist:
 if( !fs.existsSync( npmDirectory) ) {
@@ -161,18 +148,16 @@ app.on( 'ready', () => {
     const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
     mainWindow = new BrowserWindow({
-        // type: 'desktop',
-        // transparent: true,
-        // frame: false,
-        // resizable: false,
-        // movable: false,
-        // width: size.width,
-        // height: size.height
-        width: 500,
-        height: 600
+        type: 'desktop',
+        transparent: true,
+        frame: false,
+        resizable: false,
+        movable: false,
+        width: size.width,
+        height: size.height
     });
 
-    mainWindow.loadURL( `file://${distDirectory}/index.html` );
+    mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
 
     mainWindow.webContents.openDevTools();
 
@@ -180,7 +165,7 @@ app.on( 'ready', () => {
         mainWindow.webContents.send( 'ping', 'opening message!' );
     });
 
-    const watcher = chokidar.watch( `${distDirectory}`, {
+    const watcher = chokidar.watch( `${OUTPUT_DIR}`, {
         ignoreInitial: true,
         persistent: true
     });
@@ -195,25 +180,7 @@ app.on( 'ready', () => {
             mainWindow.reload();
         });
 
-    const cleanString = ( str ) => {
-        if( typeof str === 'string' ) {
-            return str.replace(/(\r\n|\n|\r)/gm,"");
-        } else {
-            return 'NA';
-        }
-    };
-
     gulp.start( 'ubershit' );
-    // exec( `gulp ubershit --directory='${ubershitDirectory}'`, ( err, stdout, stderr ) => {
-    //     // mainWindow.webContents.on( 'did-finish-load', () => {
-    //         err = cleanString( err );
-    //         stdout = cleanString( stdout );
-    //         stderr = cleanString( stderr );
-    //         mainWindow.webContents.executeJavaScript( 'console.log(\"err: ' + err + '\")' );
-    //         mainWindow.webContents.executeJavaScript( 'console.log(\"stdout: ' + stdout + '\")' );
-    //         mainWindow.webContents.executeJavaScript( 'console.log(\"stderr: ' + stderr + '\")' );
-    //     // });
-    // });
 
     mainWindow.on( 'closed', function() {
         mainWindow = null;
