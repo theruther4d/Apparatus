@@ -20,9 +20,13 @@ const args = yargs.argv;
 let BASE_DIR, OUTPUT_DIR, HTML_GLOB, CSS_GLOB, SCRIPTS_GLOB, WIDGET_DIR;
 
 gulp.task( 'ubershit', () => {
-    BASE_DIR = args.directory;
-    WIDGET_DIR = `${args.directory}/widgets`;
-    OUTPUT_DIR = `${args.directory}/dist`;
+    // BASE_DIR = args.directory;
+    // WIDGET_DIR = `${args.directory}/widgets`;
+    // OUTPUT_DIR = `${args.directory}/dist`;
+
+    BASE_DIR = '/Users/josh/Library/Application\ Support/Übersicht';
+    WIDGET_DIR = `/Users/josh/Library/Application\ Support/Übersicht/widgets`;
+    OUTPUT_DIR = `/Users/josh/Library/Application\ Support/Übersicht/dist`;
 
     console.log( `gulp widget directory: ${WIDGET_DIR}` );
     console.log( `gulp output directory: ${OUTPUT_DIR}` );
