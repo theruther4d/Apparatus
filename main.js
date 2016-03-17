@@ -20,6 +20,7 @@ const replace = require( 'gulp-replace' );
 const del = require( 'del' );
 const yargs = require( 'yargs' );
 const runSequence = require( 'run-sequence' );
+const watch = require( 'gulp-watch' );
 
 // Path constants:
 const BASE_DIR = app.getPath( 'userData' );
@@ -35,11 +36,21 @@ gulp.task( 'ubershit', () => {
     console.log( `gulp widget directory: ${WIDGET_DIR}` );
     console.log( `gulp output directory: ${OUTPUT_DIR}` );
 
-    runSequence( /*'clean', */['html', 'css', 'scripts'] );
+    runSequence( 'clean', ['html', 'css', 'scripts'], 'stream' );
+});
 
-    gulp.watch( HTML_GLOB, ['html'] );
-    gulp.watch( CSS_GLOB, ['css'] );
-    gulp.watch( SCRIPTS_GLOB, ['scripts'] );
+gulp.task( 'stream', () => {
+    watch( HTML_GLOB, ( e ) => {
+        gulp.start( 'html' );
+    });
+
+    watch( CSS_GLOB, ( e ) => {
+        gulp.start( 'css' );
+    });
+
+    watch( SCRIPTS_GLOB, ( e ) => {
+        gulp.start( 'scripts' );
+    });
 });
 
 gulp.task( 'html', () => {
@@ -159,7 +170,7 @@ app.on( 'ready', () => {
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
 
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 
     mainWindow.webContents.on( 'did-finish-load', () => {
         mainWindow.webContents.send( 'ping', 'opening message!' );
