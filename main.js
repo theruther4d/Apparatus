@@ -3,6 +3,7 @@
 // Dependencies:
 const electron = require( 'electron' );
 const app = electron.app;
+const Tray = electron.Tray;
 const BrowserWindow = electron.BrowserWindow;
 const exec = require( 'child_process' ).exec;
 const chokidar = require( 'chokidar' );
@@ -17,10 +18,11 @@ const ugly = require( 'gulp-uglify' );
 const babel = require( 'gulp-babel' );
 const insert = require( 'gulp-insert' );
 const replace = require( 'gulp-replace' );
-const del = require( 'del' );
-const yargs = require( 'yargs' );
 const runSequence = require( 'run-sequence' );
 const watch = require( 'gulp-watch' );
+
+// pre-delcare navIcon so it's not GC'd later:
+let navIcon;
 
 // Path constants:
 const BASE_DIR = app.getPath( 'userData' );
@@ -83,12 +85,6 @@ gulp.task( 'scripts', () => {
         .pipe( concat( 'scripts.js' ) )
         // .pipe( ugly() )
         .pipe( gulp.dest( OUTPUT_DIR ) );
-});
-
-gulp.task( 'watch', () => {
-    gulp.watch( HTML_GLOB, ['html'] );
-    gulp.watch( CSS_GLOB, ['css'] );
-    gulp.watch( SCRIPTS_GLOB, ['scripts'] );
 });
 
 
@@ -154,12 +150,19 @@ app.on( 'ready', () => {
     const electronScreen = electron.screen;
     const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
+    // Create the notification bar icon:
+    navIcon = new Tray( `${__dirname}/internal/images/dummy-icon.png` );
+    navIcon.setToolTip( 'Ubershit' );
+
+    // Hide the dock icon:
+    app.dock.hide();
+
     mainWindow = new BrowserWindow({
-        type: 'desktop',
-        transparent: true,
-        frame: false,
-        resizable: false,
-        movable: false,
+        // type: 'desktop',
+        // transparent: true,
+        // frame: false,
+        // resizable: false,
+        // movable: false,
         width: size.width,
         height: size.height
     });
@@ -167,10 +170,6 @@ app.on( 'ready', () => {
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
 
     mainWindow.webContents.openDevTools();
-
-    mainWindow.webContents.on( 'did-finish-load', () => {
-        mainWindow.webContents.send( 'ping', 'opening message!' );
-    });
 
     const watcher = chokidar.watch( `${OUTPUT_DIR}`, {
         ignoreInitial: true,
