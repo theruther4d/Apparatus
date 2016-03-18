@@ -29,3 +29,8 @@ gulp.task( 'scripts', () => {
         .pipe( concat( 'scripts.js' ) )
         .pipe( gulp.dest( `${OUTPUT_DIR}/scripts` ) );
 });
+
+gulp.task( 'watch', () => {
+    gulp.watch( CSS_GLOB, ['css'] );
+    gulp.watch( SCRIPTS_GLOB, ['scripts'] );
+});
