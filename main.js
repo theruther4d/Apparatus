@@ -127,6 +127,8 @@ if( !fs.existsSync( NPM_DIR) ) {
     fs.mkdir( NPM_DIR, ( err ) => {
         makeNodeModuleSymlinks([
             'osascript',
+            'nodobjc',
+            'path',
             'gulp',
             'gulp-concat',
             'gulp-insert',
@@ -190,7 +192,7 @@ app.on( 'ready', () => {
     navIcon.setContextMenu( contextMenu );
 
     // Hide the dock icon:
-    app.dock.hide();
+    // app.dock.hide();
 
     mainWindow = new BrowserWindow({
         // type: 'desktop',
@@ -198,10 +200,8 @@ app.on( 'ready', () => {
         // frame: false,
         // resizable: false,
         // movable: false,
-        // width: size.width,
-        // height: size.height
-        width: 1000,
-        height: 500
+        width: size.width,
+        height: size.height
     });
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
