@@ -40,70 +40,101 @@ var $ = require('nodobjc');
 var ffi = require('ffi');
 var path = require('path');
 
-var BlurBg = function BlurBg() {
-    _classCallCheck(this, BlurBg);
+// const slice = new BlurBg( myDiv );
 
-    $.framework('cocoa');
+/* Blur Class */
+
+var Blur = function Blur(el) {
+    _classCallCheck(this, Blur);
+
+    this._target = el;
+    // console.log( this._target );
+    this._outputCanvas();
 };
 
 ;
 
-var proto = BlurBg.prototype;
+/* BlurBg prototype */
+var proto = Blur.prototype;
 
+/*
+ * Gets the current desktop walllpaper.
+ *
+ * @return {string} wallpaper - the wallpaper URL
+*/
 proto._getWallPaper = function () {
     return String($.NSWorkspace('sharedWorkspace')('desktopImageURLForScreen', $.NSScreen('mainScreen'))).replace(/^file\:\/\/localhost/i, '');
 };
 
-proto._createDesktopMockup = function () {};
-
-// const bg = getBackground();
-var bgImage = document.createElement('img');
-bgImage.src = getBackground();
-bgImage.classList.add('bgImage');
-document.getElementById('ubershit').appendChild(bgImage);
-
-var doBgBlur = function doBgBlur() {
+/*
+ * Creates a <canvas> element representing the desktop with the current background image and its positioning.
+ *
+ * @return {DOM el} canvas - the <canvas> representation of the desktop.
+*/
+proto._createDesktopReference = function (callback) {
     // Setup:
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var ubershit = document.getElementById('ubershit');
-    var img = document.querySelector('.bgImage');
-    var wrapper = document.querySelector('.playbox__wrapper');
-    var screenDimensions = ubershit.getBoundingClientRect();
-    var imgDimensions = {
-        width: img.naturalWidth,
-        height: img.naturalHeight
+    var img = document.createElement('img');
+    img.onload = function () {
+        var screenDimensions = ubershit.getBoundingClientRect();
+        var imgDimensions = {
+            width: img.naturalWidth,
+            height: img.naturalHeight
+        };
+
+        // Do some calculations:
+        var imgRatio = imgDimensions.width / imgDimensions.height;
+        var screenRatio = screenDimensions.width / screenDimensions.height;
+        var scaleAxis = imgRatio > screenRatio ? 'width' : 'height';
+        var oppAxis = scaleAxis == 'width' ? 'height' : 'width';
+        var newScaledAxis = imgDimensions[scaleAxis] * (screenDimensions[oppAxis] / imgDimensions[oppAxis]);
+        var newNonScaledAxis = screenDimensions[oppAxis];
+        var offset = (newScaledAxis - screenDimensions[scaleAxis]) / 2;
+        var newWidth = scaleAxis == 'width' ? newScaledAxis : newNonScaledAxis;
+        var newHeight = scaleAxis == 'height' ? newScaledAxis : newNonScaledAxis;
+        var offsetX = scaleAxis == 'width' ? offset * -1 : 0;
+        var offsetY = scaleAxis == 'height' ? offset * -1 : 0;
+
+        // Do the deed:
+        canvas.width = screenDimensions.width;
+        canvas.height = screenDimensions.height;
+        ctx.drawImage(img, 0, 0, imgDimensions.width, imgDimensions.height, offsetX, offsetY, newWidth, newHeight);
+        callback(canvas);
     };
-    var dimensions = wrapper.getBoundingClientRect();
 
-    // Do some calculations:
-    var imgRatio = imgDimensions.width / imgDimensions.height;
-    var screenRatio = screenDimensions.width / screenDimensions.height;
-    var scaleAxis = imgRatio > screenRatio ? 'width' : 'height';
-    var oppAxis = scaleAxis == 'width' ? 'height' : 'width';
-    var newScaledAxis = imgDimensions[scaleAxis] * (screenDimensions[oppAxis] / imgDimensions[oppAxis]);
-    var newNonScaledAxis = screenDimensions[oppAxis];
-    var offset = (newScaledAxis - screenDimensions[scaleAxis]) / 2;
-    var newWidth = scaleAxis == 'width' ? newScaledAxis : newNonScaledAxis;
-    var newHeight = scaleAxis == 'height' ? newScaledAxis : newNonScaledAxis;
-    var offsetX = scaleAxis == 'width' ? offset * -1 : 0;
-    var offsetY = scaleAxis == 'height' ? offset * -1 : 0;
-
-    // Do the deed:
-    canvas.width = screenDimensions.width;
-    canvas.height = screenDimensions.height;
-    ctx.drawImage(img, 0, 0, imgDimensions.width, imgDimensions.height, offsetX, offsetY, newWidth, newHeight);
-
-    var canvas2 = document.createElement('canvas');
-    var ctxTwo = canvas2.getContext('2d');
-
-    canvas2.width = dimensions.width;
-    canvas2.height = dimensions.height;
-
-    // Something with the width/height is too small!!!
-    console.log('output width: ' + dimensions.width);
-    console.log('output height: ' + dimensions.height);
-    ctxTwo.drawImage(canvas, dimensions.left, dimensions.top, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-    canvas2.id = 'bozo';
-    wrapper.appendChild(canvas2);
+    img.src = this._getWallPaper();
 };
+
+/*
+ * Creates a <canvas> element representing the portion of the desktop behind the target element.
+ *
+ * @param {DOM el} reference - the full representation of the desktop to slice from.
+ * @return {DOM el} canvas - the <canvas> representation of the desktop.
+*/
+proto._createOutputCanvas = function (reference) {
+    var dimensions = this._target.getBoundingClientRect();
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = dimensions.width;
+    canvas.height = dimensions.height;
+    ctx.drawImage(reference, dimensions.left, dimensions.top, reference.width, reference.height, 0, 0, reference.width, reference.height);
+
+    return canvas;
+};
+
+/*
+ * Adds the <canvas> to the DOM.
+*/
+proto._outputCanvas = function () {
+    this._createDesktopReference(function (canvas) {
+        var slice = this._createOutputCanvas(canvas);
+        this._target.appendChild(slice);
+    }.bind(this));
+};
+
+$.framework('cocoa');
+
+window.Blur = Blur;
