@@ -6,7 +6,8 @@ var $ = require('nodobjc');
 var ffi = require('ffi');
 var path = require('path');
 
-// const slice = new BlurBg( myDiv );
+// @TODO:
+// * need to account for the dock height
 
 /* Blur Class */
 
@@ -14,6 +15,8 @@ var Blur = function Blur(el) {
     _classCallCheck(this, Blur);
 
     this._target = el;
+    this._wallPaper = this._getwallPaper();
+    this._watchwallPaper();
     this._outputCanvas();
 };
 
@@ -25,10 +28,30 @@ var proto = Blur.prototype;
 /*
  * Gets the current desktop walllpaper.
  *
- * @return {string} wallpaper - the wallpaper URL
+ * @return {string} wallPaper - the wallPaper URL
 */
-proto._getWallPaper = function () {
-    return String($.NSWorkspace('sharedWorkspace')('desktopImageURLForScreen', $.NSScreen('mainScreen'))).replace(/^file\:\/\/localhost/i, '');
+proto._getwallPaper = function () {
+    // if( !this._wallPaperWatcher ) {
+    //     this._watchwallPaper();
+    // }
+
+    var output = String($.NSWorkspace('sharedWorkspace')('desktopImageURLForScreen', $.NSScreen('mainScreen'))).replace(/^file\:\/\/localhost/i, '');
+
+    return output;
+};
+
+/*
+ * Redraws the <canvas> each tim the wallpaper changes.
+*/
+proto._watchwallPaper = function () {
+    this._wallPaperWatcher = setInterval(function () {
+        var newwallPaper = this._getwallPaper();
+
+        if (newwallPaper != this._wallPaper) {
+            this._wallPaper = newwallPaper;
+            this._outputCanvas();
+        }
+    }.bind(this), 2000);
 };
 
 /*
@@ -69,8 +92,7 @@ proto._createDesktopReference = function (callback) {
         ctx.drawImage(img, 0, 0, imgDimensions.width, imgDimensions.height, offsetX, offsetY, newWidth, newHeight);
         callback(canvas);
     };
-
-    img.src = this._getWallPaper();
+    img.src = this._wallPaper;
 };
 
 /*
@@ -81,11 +103,23 @@ proto._createDesktopReference = function (callback) {
 */
 proto._createOutputCanvas = function (reference) {
     var dimensions = this._target.getBoundingClientRect();
+
+    if (this._ctx) {
+        this._canvas.classList.add('hidden');
+        this._ctx.clearRect(0, 0, dimensions.width + 20, dimensions.height + 20);
+        this._ctx.drawImage(reference, dimensions.left, dimensions.top, reference.width + 20, reference.height + 20, 0, 0, reference.width, reference.height);
+        setTimeout(function () {
+            this._canvas.classList.remove('hidden');
+        }.bind(this), 750);
+        return;
+    }
+
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
 
     canvas.width = dimensions.width + 20;
     canvas.height = dimensions.height + 20;
+    canvas.classList.add('ubershit-blur');
     ctx.drawImage(reference, dimensions.left, dimensions.top, reference.width + 20, reference.height + 20, 0, 0, reference.width, reference.height);
 
     return canvas;
@@ -97,7 +131,15 @@ proto._createOutputCanvas = function (reference) {
 proto._outputCanvas = function () {
     this._createDesktopReference(function (canvas) {
         var slice = this._createOutputCanvas(canvas);
+
+        // Don't output <canvas> again if it already exists:
+        if (this._ctx) {
+            return;
+        }
+
         this._target.appendChild(slice);
+        this._canvas = slice;
+        this._ctx = slice.getContext('2d');
     }.bind(this));
 };
 
