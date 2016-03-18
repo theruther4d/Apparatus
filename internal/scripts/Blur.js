@@ -8,7 +8,6 @@ const path = require( 'path' );
 class Blur {
     constructor( el ) {
         this._target = el;
-        // console.log( this._target );
         this._outputCanvas();
     }
 };
@@ -35,6 +34,7 @@ proto._getWallPaper = () => {
 /*
  * Creates a <canvas> element representing the desktop with the current background image and its positioning.
  *
+ * @param {function} callback
  * @return {DOM el} canvas - the <canvas> representation of the desktop.
 */
 proto._createDesktopReference = function( callback ) {
@@ -85,9 +85,9 @@ proto._createOutputCanvas = function( reference ) {
     const canvas = document.createElement( 'canvas' );
     const ctx = canvas.getContext( '2d' );
 
-    canvas.width = dimensions.width;
-    canvas.height = dimensions.height;
-    ctx.drawImage( reference, dimensions.left, dimensions.top, reference.width, reference.height, 0, 0, reference.width, reference.height );
+    canvas.width = dimensions.width + 20;
+    canvas.height = dimensions.height + 20;
+    ctx.drawImage( reference, dimensions.left, dimensions.top, reference.width + 20, reference.height + 20, 0, 0, reference.width, reference.height );
 
     return canvas;
 };

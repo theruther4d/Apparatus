@@ -1,39 +1,5 @@
 'use strict';
 
-var osascript = require('osascript');
-var exec = require('child_process').exec;
-var fs = require('fs');
-
-var commands = {};
-var execs = {};
-
-window.command = function (file, callback, interval, options) {
-    options = options || {};
-
-    if (commands.hasOwnProperty(file)) {
-        clearInterval(commands[file]);
-    }
-
-    commands[file] = setInterval(function () {
-        osascript.file(file, options, callback);
-    }, interval);
-};
-
-window.execFromFile = function (file, callback, interval) {
-    if (execs.hasOwnProperty(file)) {
-        clearInterval(execs[file]);
-    }
-
-    execs[file] = setInterval(function () {
-        return exec(fs.readFileSync(file), callback);
-    }, interval);
-};
-
-window.WIDGET_DIR = __dirname.split('/');
-window.WIDGET_DIR.splice(-1, 1);
-window.WIDGET_DIR = WIDGET_DIR.join('/') + '/widgets';
-'use strict';
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var $ = require('nodobjc');
@@ -48,7 +14,6 @@ var Blur = function Blur(el) {
     _classCallCheck(this, Blur);
 
     this._target = el;
-    // console.log( this._target );
     this._outputCanvas();
 };
 
@@ -69,6 +34,7 @@ proto._getWallPaper = function () {
 /*
  * Creates a <canvas> element representing the desktop with the current background image and its positioning.
  *
+ * @param {function} callback
  * @return {DOM el} canvas - the <canvas> representation of the desktop.
 */
 proto._createDesktopReference = function (callback) {
@@ -118,9 +84,9 @@ proto._createOutputCanvas = function (reference) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
 
-    canvas.width = dimensions.width;
-    canvas.height = dimensions.height;
-    ctx.drawImage(reference, dimensions.left, dimensions.top, reference.width, reference.height, 0, 0, reference.width, reference.height);
+    canvas.width = dimensions.width + 20;
+    canvas.height = dimensions.height + 20;
+    ctx.drawImage(reference, dimensions.left, dimensions.top, reference.width + 20, reference.height + 20, 0, 0, reference.width, reference.height);
 
     return canvas;
 };
@@ -138,3 +104,37 @@ proto._outputCanvas = function () {
 $.framework('cocoa');
 
 window.Blur = Blur;
+'use strict';
+
+var osascript = require('osascript');
+var exec = require('child_process').exec;
+var fs = require('fs');
+
+var commands = {};
+var execs = {};
+
+window.command = function (file, callback, interval, options) {
+    options = options || {};
+
+    if (commands.hasOwnProperty(file)) {
+        clearInterval(commands[file]);
+    }
+
+    commands[file] = setInterval(function () {
+        osascript.file(file, options, callback);
+    }, interval);
+};
+
+window.execFromFile = function (file, callback, interval) {
+    if (execs.hasOwnProperty(file)) {
+        clearInterval(execs[file]);
+    }
+
+    execs[file] = setInterval(function () {
+        return exec(fs.readFileSync(file), callback);
+    }, interval);
+};
+
+window.WIDGET_DIR = __dirname.split('/');
+window.WIDGET_DIR.splice(-1, 1);
+window.WIDGET_DIR = WIDGET_DIR.join('/') + '/widgets';
