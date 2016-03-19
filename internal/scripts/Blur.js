@@ -2,9 +2,6 @@ const $ = require( 'nodobjc' );
 const ffi = require( 'ffi' );
 const path = require( 'path' );
 
-// @TODO:
-// * need to account for the dock height
-
 /* Blur Class */
 class Blur {
     constructor( el ) {

@@ -27,6 +27,45 @@ Ubershit compiles all `.html`, `.css`, and `.js` files from the `widgets` direct
 
 ```
 
+### Public Methods:
+There are a few useful public methods exposed as global variables.
+#### `command( file, callback, interval )`:
+A wrapper around [`node-osascript`](https://www.npmjs.com/package/node-osascript).  Takes a file containing osascript and executes it every number of milliseconds provided.
+* `@param {string} file` - The file to read from. Either applescript or javascript.
+* `@param {function} callback` - Receives `error` and `response` as arguments.
+* `@param {integer} interval` - The number of milliseconds to wait until re-executing.
+
+Example usage:
+```javascript
+command( `${WIDGET_DIR}/playbox/as/getTrack.applescript`, ( err, res ) => {
+    ...
+}, 1000 );
+```
+
+#### `Blur( el )`:
+A class for creating blurred backgrounds. Takes a wrapper element an appends a `<canvas>` with the portion of the desktop that sits behind the wrapper element.
+* `@param {DOM node} el` - The element to measure and append the `<canvas>` to.
+
+Example usage:
+```javascript
+const myBlur = new Blur( myWrapper );
+```
+```css
+    .myWrapper {
+        position: relative;
+        z-index: 1;
+
+        canvas {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            z-index: -1;
+            -webkit-filter: blur( 10px );
+        }
+    }
+```
+
+
 ## Building
 ### Clone the repo:
 ```sh
