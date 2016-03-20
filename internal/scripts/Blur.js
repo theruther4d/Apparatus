@@ -4,8 +4,9 @@ const path = require( 'path' );
 
 /* Blur Class */
 class Blur {
-    constructor( el ) {
+    constructor( el, blurAmt = 10 ) {
         this._target = el;
+        this._blurAmt = blurAmt * 2;
         this._wallPaper = this._getwallPaper();
         this._watchwallPaper();
         this._outputCanvas();
@@ -13,7 +14,7 @@ class Blur {
 };
 
 
-/* BlurBg prototype */
+/* Blur prototype */
 const proto = Blur.prototype;
 
 
@@ -23,10 +24,6 @@ const proto = Blur.prototype;
  * @return {string} wallPaper - the wallPaper URL
 */
 proto._getwallPaper = function() {
-    // if( !this._wallPaperWatcher ) {
-    //     this._watchwallPaper();
-    // }
-
     const output = String(
         $.NSWorkspace( 'sharedWorkspace' )(
             'desktopImageURLForScreen', $.NSScreen( 'mainScreen' )
@@ -106,8 +103,8 @@ proto._createOutputCanvas = function( reference ) {
 
     if( this._ctx ) {
         this._canvas.classList.add( 'hidden' );
-        this._ctx.clearRect(0, 0, dimensions.width + 20, dimensions.height + 20 );
-        this._ctx.drawImage( reference, dimensions.left, dimensions.top, reference.width + 20, reference.height + 20, 0, 0, reference.width, reference.height );
+        this._ctx.clearRect(0, 0, dimensions.width + this._blurAmt, dimensions.height + this._blurAmt );
+        this._ctx.drawImage( reference, dimensions.left, dimensions.top, reference.width + this._blurAmt, reference.height + this._blurAmt, 0, 0, reference.width, reference.height );
         setTimeout( function() {
             this._canvas.classList.remove( 'hidden' );
         }.bind( this ), 750 );
@@ -117,10 +114,13 @@ proto._createOutputCanvas = function( reference ) {
     const canvas = document.createElement( 'canvas' );
     const ctx = canvas.getContext( '2d' );
 
-    canvas.width = dimensions.width + 20;
-    canvas.height = dimensions.height + 20;
+    canvas.width = dimensions.width + this._blurAmt;
+    canvas.height = dimensions.height + this._blurAmt;
     canvas.classList.add( 'ubershit-blur' );
-    ctx.drawImage( reference, dimensions.left, dimensions.top, reference.width + 20, reference.height + 20, 0, 0, reference.width, reference.height );
+    canvas.style.top = `${( this._blurAmt / 2 ) * -1}px`;
+    canvas.style.left = `${( this._blurAmt / 2 ) * -1}px`;
+    canvas.style.webkitFilter = `blur( ${this._blurAmt / 2}px )`;
+    ctx.drawImage( reference, dimensions.left, dimensions.top, reference.width + this._blurAmt, reference.height + this._blurAmt, 0, 0, reference.width, reference.height );
 
     return canvas;
 };
@@ -136,6 +136,12 @@ proto._outputCanvas = function() {
         // Don't output <canvas> again if it already exists:
         if( this._ctx ) {
             return;
+        }
+
+        const targetPositioning = this._target.style.position;
+        
+        if( targetPositioning == 'static' ) {
+            this._target.style.position = 'relative';
         }
 
         this._target.appendChild( slice );

@@ -42,29 +42,15 @@ command( `${WIDGET_DIR}/playbox/as/getTrack.applescript`, ( err, res ) => {
 }, 1000 );
 ```
 
-#### `Blur( el )`:
+#### `Blur( el, amt )`:
 A class for creating blurred backgrounds. Takes a wrapper element an appends a `<canvas>` with the portion of the desktop that sits behind the wrapper element.
 * `@param {DOM node} el` - The element to measure and append the `<canvas>` to.
+* `@param {integer} [amt = 10]` - The amount of blur to apply to the background, defaults to 10.
 
 Example usage:
 ```javascript
 const myBlur = new Blur( myWrapper );
 ```
-```css
-    .myWrapper {
-        position: relative;
-        z-index: 1;
-
-        canvas {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            z-index: -1;
-            -webkit-filter: blur( 10px );
-        }
-    }
-```
-
 
 ## Building
 ### Clone the repo:
