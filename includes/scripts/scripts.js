@@ -113,13 +113,17 @@ proto._createOutputCanvas = function (reference) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
 
+    // @TODO:
+    // * canvas drawing area isn't right on the x-axis, too small
+    // * aligment is slightly off, perhaps bc of ^
+    // canvas.style.backgroundColor = 'red';
     canvas.width = dimensions.width + this._blurAmt;
     canvas.height = dimensions.height + this._blurAmt;
     canvas.classList.add('ubershit-blur');
     canvas.style.top = this._blurAmt / 2 * -1 + 'px';
     canvas.style.left = this._blurAmt / 2 * -1 + 'px';
     canvas.style.webkitFilter = 'blur( ' + this._blurAmt / 2 + 'px )';
-    ctx.drawImage(reference, dimensions.left, dimensions.top, reference.width + this._blurAmt, reference.height + this._blurAmt, 0, 0, reference.width, reference.height);
+    ctx.drawImage(reference, dimensions.left, dimensions.top, reference.width, reference.height, 0, 0, reference.width + this._blurAmt * 4, reference.height + this._blurAmt * 4);
 
     return canvas;
 };
