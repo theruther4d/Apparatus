@@ -142,7 +142,11 @@ proto._outputCanvas = function () {
             this._target.style.position = 'relative';
         }
 
+        slice.classList.add('hidden');
         this._target.appendChild(slice);
+        setTimeout(function () {
+            slice.classList.remove('hidden');
+        }.bind(this), 350);
         this._canvas = slice;
         this._ctx = slice.getContext('2d');
     }.bind(this));
