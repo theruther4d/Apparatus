@@ -161,6 +161,34 @@ $.framework('cocoa');
 window.Blur = Blur;
 'use strict';
 
+// @TODO:
+// need a path to includes/images for tray icon
+
+var electron = require('electron');
+var remote = electron.remote;
+var app = remote.app;
+var Tray = remote.Tray;
+
+// if( typeof window.navIcon == 'undefined' ) {
+//     window.navIcon = new Tray( `${__dirname}/iconTemplate.png` );
+//     console.log( 'creating tray icon' );
+// } else {
+//     console.log( 'window.navIcon already exists!' );
+// }
+//
+// navIcon.setToolTip( 'Ubershit' );
+
+// window.onbeforeunload( () => {
+//     alert( 'about to unload!' );
+//     window.navIcon = null;
+// });
+
+var createTray = function createTray() {
+    alert('creating tray!');
+    window.navIcon = new Tray(__dirname + '/iconTemplate.png');
+};
+'use strict';
+
 var osascript = require('osascript');
 var exec = require('child_process').exec;
 var fs = require('fs');

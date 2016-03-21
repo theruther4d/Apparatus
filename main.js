@@ -20,7 +20,7 @@ const runSequence = require( 'run-sequence' );
 const watch = require( 'gulp-watch' );
 
 // pre-delcare navIcon so it's not GC'd later:
-let navIcon, mainWindow;
+let /*navIcon, */mainWindow;
 
 // Path constants:
 const BASE_DIR = app.getPath( 'userData' );
@@ -49,6 +49,20 @@ const generateWidgetBlobs = ( widgets, blob ) => {
 
     return blobs;
 };
+
+// const generateWidgetMenus = ( widgets ) => {
+//     let menuItems = [];
+//
+//     widgets.forEach( ( widget ) => {
+//         const widgetManifest = `${WIDGET_DIR}/${widget}/package.json`;
+//         if( fs.existsSync( widgetManifest ) ) {
+//             const widgetOptions = fs.readFileSync( `${WIDGET_DIR}/${widget}/package.json` );
+//             console.log( widgetOptions );
+//             // let widgetMenu = {};
+//         }
+//     });
+// };
+// generateWidgetMenus( widgets );
 
 // File Globs
 const widgets = getWidgets();
@@ -128,6 +142,7 @@ if( !fs.existsSync( NPM_DIR) ) {
         makeNodeModuleSymlinks([
             'osascript',
             'nodobjc',
+            'ffi',
             'path',
             'gulp',
             'gulp-concat',
@@ -151,62 +166,70 @@ app.on( 'ready', () => {
     const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
     // Menu:
-    var contextMenu = Menu.buildFromTemplate([
-        {
-            label: 'Open Widgets Folder',
-            type: 'normal',
-            click: ( item, window ) => {
-                shell.showItemInFolder( WIDGET_DIR );
-            }
-        },
-        {
-            label: 'Show Debug Console',
-            type: 'checkbox',
-            checked: false,
-            click: ( item, window ) => {
-                const currWindow = mainWindow || window;
-                if( !currWindow ) {
-                    return;
-                }
-
-                const action = item.checked ? 'openDevTools' : 'closeDevTools';
-                currWindow.webContents[action]({
-                    detach: true
-                });
-            }
-        },
-        {
-            type: 'separator'
-        },
-        {
-            label: 'Quit Ubershit',
-            type: 'normal',
-            accelerator: 'Command+Q',
-            click: ( item, window ) => {
-                app.quit();
-            }
-        }
-    ]);
+    // const contextMenu = Menu.buildFromTemplate([
+    //     {
+    //         label: 'Open Widgets Folder',
+    //         type: 'normal',
+    //         click: ( item, window ) => {
+    //             shell.showItemInFolder( WIDGET_DIR );
+    //         }
+    //     },
+    //     {
+    //         label: 'Show Debug Console',
+    //         type: 'checkbox',
+    //         checked: false,
+    //         click: ( item, window ) => {
+    //             const currWindow = mainWindow || window;
+    //             if( !currWindow ) {
+    //                 return;
+    //             }
+    //
+    //             const action = item.checked ? 'openDevTools' : 'closeDevTools';
+    //             currWindow.webContents[action]({
+    //                 detach: true
+    //             });
+    //         }
+    //     },
+    //     {
+    //         type: 'separator'
+    //     },
+    //     {
+    //         label: 'Quit Ubershit',
+    //         type: 'normal',
+    //         accelerator: 'Command+Q',
+    //         click: ( item, window ) => {
+    //             app.quit();
+    //         }
+    //     }
+    // ]);
 
     // Create the notification bar icon:
-    navIcon = new Tray( `${__dirname}/includes/images/iconTemplate.png` );
-    navIcon.setToolTip( 'Ubershit' );
-    navIcon.setContextMenu( contextMenu );
+    // navIcon.setContextMenu( contextMenu );
 
     // Hide the dock icon:
-    app.dock.hide();
+    // app.dock.hide();
 
     mainWindow = new BrowserWindow({
-        type: 'desktop',
-        transparent: true,
-        frame: false,
-        resizable: false,
-        movable: false,
+        // type: 'desktop',
+        // transparent: true,
+        // frame: false,
+        // resizable: false,
+        // movable: false,
         width: size.width,
         height: size.height
     });
 
+    // navIcon = new Tray( `${__dirname}/includes/images/iconTemplate.png` );
+    // navIcon.setToolTip( 'Ubershit' );
+    // navIcon.on( 'click', ( e, bounds ) => {
+    //     console.log( e );
+    //     console.log( bounds );
+    //     mainWindow.webContents.executeJavaScript( `window.toggleContextMenu( ` + bounds + ` )` );
+    // });
+
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
+    mainWindow.webContents.executeJavaScript( `createTray()` );
+    // mainWindow.openDevTools();
 
     const watcher = chokidar.watch( `${OUTPUT_DIR}`, {
         ignoreInitial: true,
@@ -222,6 +245,10 @@ app.on( 'ready', () => {
         });
 
     gulp.start( 'ubershit' );
+
+    mainWindow.on( 'close', () => {
+        mainWindow.webContents.executeJavaScript( `alert( 'closing!' ); window.navIcon.destroy(); window.navIcon = null` );
+    });
 
     mainWindow.on( 'closed', function() {
         mainWindow = null;
