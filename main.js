@@ -170,7 +170,9 @@ app.on( 'ready', () => {
                 }
 
                 const action = item.checked ? 'openDevTools' : 'closeDevTools';
-                currWindow.webContents[action]();
+                currWindow.webContents[action]({
+                    detach: true
+                });
             }
         },
         {
