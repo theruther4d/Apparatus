@@ -228,6 +228,7 @@ app.on( 'ready', () => {
     // });
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
+    // mainWindow.webContents.executeJavaScript( `console.log( '${WIDGET_DIR}' )` );
     mainWindow.webContents.executeJavaScript( `createTray()` );
     // mainWindow.openDevTools();
 
@@ -247,7 +248,7 @@ app.on( 'ready', () => {
     gulp.start( 'ubershit' );
 
     mainWindow.on( 'close', () => {
-        mainWindow.webContents.executeJavaScript( `alert( 'closing!' ); window.navIcon.destroy(); window.navIcon = null` );
+        mainWindow.webContents.executeJavaScript( `window.navIcon.destroy(); window.navIcon = null` );
     });
 
     mainWindow.on( 'closed', function() {

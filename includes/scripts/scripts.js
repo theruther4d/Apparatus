@@ -168,24 +168,48 @@ var electron = require('electron');
 var remote = electron.remote;
 var app = remote.app;
 var Tray = remote.Tray;
-
-// if( typeof window.navIcon == 'undefined' ) {
-//     window.navIcon = new Tray( `${__dirname}/iconTemplate.png` );
-//     console.log( 'creating tray icon' );
-// } else {
-//     console.log( 'window.navIcon already exists!' );
-// }
-//
-// navIcon.setToolTip( 'Ubershit' );
-
-// window.onbeforeunload( () => {
-//     alert( 'about to unload!' );
-//     window.navIcon = null;
-// });
+var shell = remote.shell;
+var Menu = electron.remote.Menu;
+var contextMenu = void 0;
 
 var createTray = function createTray() {
-    alert('creating tray!');
+    // Menu:
+    contextMenu = Menu.buildFromTemplate([{
+        label: 'Open Widgets Folder',
+        type: 'normal',
+        click: function click(item, currWindow) {
+            // console.log( window.WIDGET_DIR );
+            shell.showItemInFolder(window.WIDGET_DIR);
+        }
+    }, {
+        label: 'Show Debug Console',
+        type: 'checkbox',
+        checked: false,
+        click: function click(item, currWindow) {
+            // const currWindow = mainWindow || window;
+            if (!currWindow) {
+                return;
+            }
+
+            var action = item.checked ? 'openDevTools' : 'closeDevTools';
+            currWindow.webContents[action]({
+                detach: true
+            });
+        }
+    }, {
+        type: 'separator'
+    }, {
+        label: 'Quit Ubershit',
+        type: 'normal',
+        accelerator: 'Command+Q',
+        click: function click(item, currWindow) {
+            app.quit();
+        }
+    }]);
+
+    // Create the notification bar icon:
     window.navIcon = new Tray(__dirname + '/iconTemplate.png');
+    window.navIcon.setContextMenu(contextMenu);
 };
 'use strict';
 
