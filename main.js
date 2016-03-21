@@ -187,12 +187,12 @@ app.on( 'ready', () => {
     ]);
 
     // Create the notification bar icon:
-    navIcon = new Tray( `${__dirname}/includes/images/dummy-icon.png` );
+    navIcon = new Tray( `${__dirname}/includes/images/iconTemplate.png` );
     navIcon.setToolTip( 'Ubershit' );
     navIcon.setContextMenu( contextMenu );
 
     // Hide the dock icon:
-    // app.dock.hide();
+    app.dock.hide();
 
     mainWindow = new BrowserWindow({
         type: 'desktop',
