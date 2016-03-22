@@ -1,5 +1,152 @@
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var electron = require('electron');
+var remote = electron.remote;
+var app = remote.app;
+var Tray = remote.Tray;
+var shell = remote.shell;
+var Menu = remote.Menu;
+var MenuItem = remote.MenuItem;
+window.contextMenu;
+
+var Ubershit = function () {
+    function Ubershit() {
+        _classCallCheck(this, Ubershit);
+
+        this._events = {};
+        this.on('ready', this._createTray.bind(this));
+    }
+
+    /*
+     * Check if this instance contains an event by name.
+    */
+
+
+    _createClass(Ubershit, [{
+        key: '_hasEvent',
+        value: function _hasEvent(eventName) {
+            return this._events.hasOwnProperty(eventName);
+        }
+
+        /*
+         * Bind an event by name:
+        */
+
+    }, {
+        key: 'on',
+        value: function on(eventName, callBack) {
+            if (!this._hasEvent(eventName)) {
+                this._events[eventName] = [callBack];
+                return;
+            }
+
+            this._events[eventName].push(callBack);
+        }
+
+        /**
+         * Trigger the event by name:
+        */
+
+    }, {
+        key: 'trigger',
+        value: function trigger(eventName) {
+            if (!this._hasEvent(eventName)) {
+                return false;
+            }
+
+            this._events[eventName].forEach(function (callBack) {
+                callBack();
+            });
+        }
+
+        /**
+         * Creates the tray icon and initial context menu.
+        */
+
+    }, {
+        key: '_createTray',
+        value: function _createTray() {
+            // Menu:
+            this.menu = Menu.buildFromTemplate([{
+                label: 'Open Widgets Folder',
+                type: 'normal',
+                click: function click(item, currWindow) {
+                    shell.showItemInFolder(window.WIDGET_DIR);
+                }
+            }, {
+                label: 'Show Debug Console',
+                type: 'checkbox',
+                checked: false,
+                click: function click(item, currWindow) {
+                    // const currWindow = mainWindow || window;
+                    if (!currWindow) {
+                        return;
+                    }
+
+                    var action = item.checked ? 'openDevTools' : 'closeDevTools';
+                    currWindow.webContents[action]({
+                        detach: true
+                    });
+                }
+            }, {
+                type: 'separator'
+            }, {
+                label: 'Quit Ubershit',
+                type: 'normal',
+                accelerator: 'Command+Q',
+                click: function click(item, currWindow) {
+                    app.quit();
+                }
+            }]);
+
+            // Create the notification bar icon:
+            this._tray = new Tray(__dirname + '/iconTemplate.png');
+            this._tray.setContextMenu(this.menu);
+        }
+
+        /*
+         * Add items to the context menu.
+        */
+
+    }, {
+        key: 'addToMenu',
+        value: function addToMenu(namespace, items) {
+            // Add the section for this widget:
+            this.menu.append(new MenuItem({ type: 'separator' }));
+
+            // const subMenu = new MenuItem( { label: namespace, type: 'submenu' } );
+            var subMenu = new Menu();
+
+            items.forEach(function (item) {
+                var menuItem = new MenuItem(item);
+                // this.menu.append( menuItem );
+                subMenu.append(menuItem);
+            });
+
+            this.menu.append(new MenuItem({ label: namespace, submenu: subMenu }));
+
+            // this.menu.append( subMenu );
+            this._tray.setContextMenu(this.menu);
+        }
+    }]);
+
+    return Ubershit;
+}();
+
+;
+
+window.ubershit = new Ubershit();
+'use strict';
+
+function triggerReady() {
+    ubershit.trigger('ready');
+};
+'use strict';
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var $ = require('nodobjc');
@@ -159,58 +306,103 @@ proto._outputCanvas = function () {
 $.framework('cocoa');
 
 window.Blur = Blur;
-'use strict';
-
-// @TODO:
-// need a path to includes/images for tray icon
-
-var electron = require('electron');
-var remote = electron.remote;
-var app = remote.app;
-var Tray = remote.Tray;
-var shell = remote.shell;
-var Menu = electron.remote.Menu;
-var contextMenu = void 0;
-
-var createTray = function createTray() {
-    // Menu:
-    contextMenu = Menu.buildFromTemplate([{
-        label: 'Open Widgets Folder',
-        type: 'normal',
-        click: function click(item, currWindow) {
-            // console.log( window.WIDGET_DIR );
-            shell.showItemInFolder(window.WIDGET_DIR);
-        }
-    }, {
-        label: 'Show Debug Console',
-        type: 'checkbox',
-        checked: false,
-        click: function click(item, currWindow) {
-            // const currWindow = mainWindow || window;
-            if (!currWindow) {
-                return;
-            }
-
-            var action = item.checked ? 'openDevTools' : 'closeDevTools';
-            currWindow.webContents[action]({
-                detach: true
-            });
-        }
-    }, {
-        type: 'separator'
-    }, {
-        label: 'Quit Ubershit',
-        type: 'normal',
-        accelerator: 'Command+Q',
-        click: function click(item, currWindow) {
-            app.quit();
-        }
-    }]);
-
-    // Create the notification bar icon:
-    window.navIcon = new Tray(__dirname + '/iconTemplate.png');
-    window.navIcon.setContextMenu(contextMenu);
-};
+// /** Events Class */
+// class Events {
+//     constructor() {
+//         this._events = {};
+//     }
+//
+//     _hasEvent( eventName ) {
+//         return this._events.hasOwnProperty( eventName );
+//     }
+//
+//     on( eventName, callBack ) {
+//         if( !this._hasEvent( eventName ) ) {
+//             this._events[eventName] = [ callBack ];
+//             return;
+//         }
+//
+//         this._events[eventName].push( callBack );
+//     }
+//
+//     /**
+//      * Trigger the event by name:
+//      */
+//     trigger( eventName ) {
+//         if( !this._hasEvent( eventName ) ) {
+//             return false;
+//         }
+//
+//         this._events[eventName].forEach( ( callBack ) => {
+//             callBack();
+//         });
+//     }
+// };
+"use strict";
+// // @TODO:
+// // * need a path to includes/images for tray icon
+// // * Maybe we wrap the entire concatenated code inside of a function that is triggered when the app is ready
+// // -- OR --
+// // * We provide a function that tells clientside code when the app is ready ?
+//
+// const electron = require( 'electron' );
+// const remote = electron.remote;
+// const app = remote.app;
+// const Tray = remote.Tray;
+// const shell = remote.shell;
+// const Menu = remote.Menu;
+// const MenuItem = remote.MenuItem;
+// window.contextMenu;
+//
+// ubershit.on( 'ready', () => {
+//     _createTray();
+// });
+//
+// const _createTray = () => {
+//     // Menu:
+//     window.contextMenu = Menu.buildFromTemplate([
+//         {
+//             label: 'Open Widgets Folder',
+//             type: 'normal',
+//             click: ( item, currWindow ) => {
+//                 // console.log( window.WIDGET_DIR );
+//                 shell.showItemInFolder( window.WIDGET_DIR );
+//             }
+//         },
+//         {
+//             label: 'Show Debug Console',
+//             type: 'checkbox',
+//             checked: false,
+//             click: ( item, currWindow ) => {
+//                 // const currWindow = mainWindow || window;
+//                 if( !currWindow ) {
+//                     return;
+//                 }
+//
+//                 const action = item.checked ? 'openDevTools' : 'closeDevTools';
+//                 currWindow.webContents[action]({
+//                     detach: true
+//                 });
+//             }
+//         },
+//         {
+//             type: 'separator'
+//         },
+//         {
+//             label: 'Quit Ubershit',
+//             type: 'normal',
+//             accelerator: 'Command+Q',
+//             click: ( item, currWindow ) => {
+//                 app.quit();
+//             }
+//         }
+//     ]);
+//
+//     // Create the notification bar icon:
+//     window.navIcon = new Tray( `${__dirname}/iconTemplate.png` );
+//     window.navIcon.setContextMenu( contextMenu );
+// };
+"use strict";
 'use strict';
 
 var osascript = require('osascript');

@@ -7,7 +7,7 @@ import concat from 'gulp-concat';
 
 const BASE_DIR = __dirname.replace( '/internal', '' );
 const CSS_GLOB = 'css/**/*.scss';
-const SCRIPTS_GLOB = 'scripts/**/*.js';
+const SCRIPTS_GLOB = [ 'scripts/Ubershit.js', 'scripts/onready.js', 'scripts/**/*.js' ];
 const OUTPUT_DIR = `${BASE_DIR}/includes`;
 
 gulp.task( 'default', ['css', 'scripts'] );
