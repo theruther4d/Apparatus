@@ -152,14 +152,14 @@ app.on( 'ready', () => {
     const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
     // Hide the dock icon:
-    // app.dock.hide();
+    app.dock.hide();
 
     mainWindow = new BrowserWindow({
-        // type: 'desktop',
-        // transparent: true,
-        // frame: false,
-        // resizable: false,
-        // movable: false,
+        type: 'desktop',
+        transparent: true,
+        frame: false,
+        resizable: false,
+        movable: false,
         width: size.width,
         height: size.height
     });

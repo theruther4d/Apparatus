@@ -29,6 +29,13 @@ Ubershit compiles all `.html`, `.css`, and `.js` files from the `widgets` direct
 
 ### Public Methods:
 There are a few useful public methods exposed as global variables.
+
+#### `ubershit`
+The instance of the app, provides the following helpers:
+* `addToMenu( namespace, items )`
+    * `namespace` string - the name of your widget. Items added will sit in the menu under this string.
+    * `items` array - an array of objects, corresponds directly to [electron's MenuItem class.](https://github.com/atom/electron/blob/master/docs/api/menu-item.md)
+
 #### `command( file, callback, interval )`:
 A wrapper around [`node-osascript`](https://www.npmjs.com/package/node-osascript).  Takes a file containing osascript and executes it every number of milliseconds provided.
 * `@param {string} file` - The file to read from. Either applescript or javascript.
