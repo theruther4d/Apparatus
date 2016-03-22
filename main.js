@@ -155,17 +155,17 @@ app.on( 'ready', () => {
     app.dock.hide();
 
     mainWindow = new BrowserWindow({
-        type: 'desktop',
-        transparent: true,
-        frame: false,
-        resizable: false,
-        movable: false,
+        // type: 'desktop',
+        // transparent: true,
+        // frame: false,
+        // resizable: false,
+        // movable: false,
         width: size.width,
         height: size.height
     });
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
-    mainWindow.webContents.executeJavaScript( `window.triggerReady()` );
+    mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'ready' );` );
 
     const watcher = chokidar.watch( `${OUTPUT_DIR}`, {
         ignoreInitial: true,

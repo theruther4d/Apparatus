@@ -11,30 +11,50 @@ var Tray = remote.Tray;
 var shell = remote.shell;
 var Menu = remote.Menu;
 var MenuItem = remote.MenuItem;
-window.contextMenu;
+var osascript = require('osascript');
+var exec = require('child_process').exec;
+var fs = require('fs');
+
+/** Ubershit Class */
 
 var Ubershit = function () {
     function Ubershit() {
         _classCallCheck(this, Ubershit);
 
         this._events = {};
+        this.WIDGET_DIR = this._getWidgetDirPath();
+        this._commands = {};
+        this._execs = {};
         this.on('ready', this._createTray.bind(this));
     }
 
-    /*
-     * Check if this instance contains an event by name.
-    */
+    /**
+     * Returns the widget directory path.
+     */
 
 
     _createClass(Ubershit, [{
+        key: '_getWidgetDirPath',
+        value: function _getWidgetDirPath() {
+            var WIDGET_DIR = __dirname.split('/');
+            WIDGET_DIR.splice(-1, 1);
+            WIDGET_DIR = WIDGET_DIR.join('/') + '/widgets';
+            return WIDGET_DIR;
+        }
+
+        /**
+         * Check if this instance contains an event by name.
+         */
+
+    }, {
         key: '_hasEvent',
         value: function _hasEvent(eventName) {
             return this._events.hasOwnProperty(eventName);
         }
 
-        /*
+        /**
          * Bind an event by name:
-        */
+         */
 
     }, {
         key: 'on',
@@ -49,7 +69,7 @@ var Ubershit = function () {
 
         /**
          * Trigger the event by name:
-        */
+         */
 
     }, {
         key: 'trigger',
@@ -65,7 +85,7 @@ var Ubershit = function () {
 
         /**
          * Creates the tray icon and initial context menu.
-        */
+         */
 
     }, {
         key: '_createTray',
@@ -108,9 +128,9 @@ var Ubershit = function () {
             this._tray.setContextMenu(this.menu);
         }
 
-        /*
+        /**
          * Add items to the context menu.
-        */
+         */
 
     }, {
         key: 'addToMenu',
@@ -131,6 +151,61 @@ var Ubershit = function () {
                 this._tray.setContextMenu(this.menu);
             }.bind(this));
         }
+
+        /**
+         * A wrapper around osascript, executes the file at a given interval.
+         *
+         * @param {string} file - The file to execute. Must be valid osascript.
+         * @param {function} callback - Executed after the file command, returns with params error, and response.
+         * @param {integer} interval - The interval at which to re-execute the command.
+         * @param {object} options - Options for npm osascript module.
+         */
+
+    }, {
+        key: 'command',
+        value: function command(file, callback, interval, options) {
+            options = options || {};
+
+            if (this._commands.hasOwnProperty(file)) {
+                clearInterval(this._commands[file]);
+            }
+
+            this._commands[file] = setInterval(function () {
+                osascript.file(file, options, callback);
+            }, interval);
+        }
+
+        /**
+         * Executes a script from a file at a specific interval.
+         *
+         * @param {string} file - The file to execute. Must be valid osascript.
+         * @param {function} callback - Executed after the file command, returns with params error, and response.
+         * @param {integer} interval - The interval at which to re-execute the command.
+         */
+
+    }, {
+        key: 'execFromFile',
+        value: function execFromFile(file, callback, interval) {
+            if (this._execs.hasOwnProperty(file)) {
+                clearInterval(this._execs[file]);
+            }
+
+            this._execs[file] = setInterval(function () {
+                return exec(fs.readFileSync(file), callback);
+            }, interval);
+        }
+
+        /**
+         * Makes Blur Class publicly available.
+         */
+
+    }, {
+        key: 'blur',
+        value: function blur(el) {
+            var blurAmt = arguments.length <= 1 || arguments[1] === undefined ? 10 : arguments[1];
+
+            return new Blur(el, blurAmt);
+        }
     }]);
 
     return Ubershit;
@@ -139,11 +214,6 @@ var Ubershit = function () {
 ;
 
 window.ubershit = new Ubershit();
-'use strict';
-
-function triggerReady() {
-    ubershit.trigger('ready');
-};
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -305,37 +375,3 @@ proto._outputCanvas = function () {
 $.framework('cocoa');
 
 window.Blur = Blur;
-'use strict';
-
-var osascript = require('osascript');
-var exec = require('child_process').exec;
-var fs = require('fs');
-
-var commands = {};
-var execs = {};
-
-window.command = function (file, callback, interval, options) {
-    options = options || {};
-
-    if (commands.hasOwnProperty(file)) {
-        clearInterval(commands[file]);
-    }
-
-    commands[file] = setInterval(function () {
-        osascript.file(file, options, callback);
-    }, interval);
-};
-
-window.execFromFile = function (file, callback, interval) {
-    if (execs.hasOwnProperty(file)) {
-        clearInterval(execs[file]);
-    }
-
-    execs[file] = setInterval(function () {
-        return exec(fs.readFileSync(file), callback);
-    }, interval);
-};
-
-window.WIDGET_DIR = __dirname.split('/');
-window.WIDGET_DIR.splice(-1, 1);
-window.WIDGET_DIR = WIDGET_DIR.join('/') + '/widgets';
