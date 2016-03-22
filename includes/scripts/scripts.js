@@ -115,22 +115,21 @@ var Ubershit = function () {
     }, {
         key: 'addToMenu',
         value: function addToMenu(namespace, items) {
-            // Add the section for this widget:
-            this.menu.append(new MenuItem({ type: 'separator' }));
+            this.on('ready', function () {
+                this.menu.append(new MenuItem({ type: 'separator' }));
 
-            // const subMenu = new MenuItem( { label: namespace, type: 'submenu' } );
-            var subMenu = new Menu();
+                var subMenu = new Menu();
 
-            items.forEach(function (item) {
-                var menuItem = new MenuItem(item);
-                // this.menu.append( menuItem );
-                subMenu.append(menuItem);
-            });
+                items.forEach(function (item) {
+                    var menuItem = new MenuItem(item);
+                    subMenu.append(menuItem);
+                });
 
-            this.menu.append(new MenuItem({ label: namespace, submenu: subMenu }));
+                this.menu.append(new MenuItem({ label: namespace, submenu: subMenu }));
 
-            // this.menu.append( subMenu );
-            this._tray.setContextMenu(this.menu);
+                // Refresh the menu:
+                this._tray.setContextMenu(this.menu);
+            }.bind(this));
         }
     }]);
 

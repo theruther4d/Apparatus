@@ -99,22 +99,21 @@ class Ubershit {
      * Add items to the context menu.
     */
     addToMenu( namespace, items ) {
-        // Add the section for this widget:
-        this.menu.append( new MenuItem( { type: 'separator' } ) );
+        this.on( 'ready', function() {
+            this.menu.append( new MenuItem( { type: 'separator' } ) );
 
-        // const subMenu = new MenuItem( { label: namespace, type: 'submenu' } );
-        const subMenu = new Menu();
+            const subMenu = new Menu();
 
-        items.forEach( ( item ) => {
-            const menuItem = new MenuItem( item );
-            // this.menu.append( menuItem );
-            subMenu.append( menuItem );
-        });
+            items.forEach( ( item ) => {
+                const menuItem = new MenuItem( item );
+                subMenu.append( menuItem );
+            });
 
-        this.menu.append( new MenuItem( { label: namespace, submenu: subMenu } ) );
-        
-        // this.menu.append( subMenu );
-        this._tray.setContextMenu( this.menu );
+            this.menu.append( new MenuItem( { label: namespace, submenu: subMenu } ) );
+
+            // Refresh the menu:
+            this._tray.setContextMenu( this.menu );
+        }.bind( this ) );
     }
 };
 
