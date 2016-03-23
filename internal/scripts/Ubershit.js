@@ -17,7 +17,10 @@ class Ubershit {
         this.WIDGET_DIR = this._getWidgetDirPath();
         this._commands = {};
         this._execs = {};
-        this.on( 'ready', this._createTray.bind( this ) );
+        this.on( 'ready', function() {
+            this._createTray();
+            this.browserWindow = browserWindow.getAllWindows()[0]
+        }.bind( this ) );
     }
 
     /**
@@ -73,7 +76,7 @@ class Ubershit {
             {
                 label: 'Open Widgets Folder',
                 type: 'normal',
-                click: ( item, currWindow ) => {
+                click: ( item ) => {
                     shell.showItemInFolder( this.WIDGET_DIR );
                 }
             },
@@ -82,10 +85,9 @@ class Ubershit {
                 type: 'checkbox',
                 checked: false,
                 click: ( item ) => {
-                    const currWindow = browserWindow.getAllWindows()[0];
                     const action = item.checked ? 'openDevTools' : 'closeDevTools';
-                    
-                    currWindow.webContents[action]({
+
+                    this.browserWindow.webContents[action]({
                         detach: true
                     });
                 }
@@ -97,7 +99,7 @@ class Ubershit {
                 label: 'Quit Ubershit',
                 type: 'normal',
                 accelerator: 'Command+Q',
-                click: ( item, currWindow ) => {
+                click: ( item ) => {
                     app.quit();
                 }
             }

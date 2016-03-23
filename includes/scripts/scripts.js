@@ -26,7 +26,10 @@ var Ubershit = function () {
         this.WIDGET_DIR = this._getWidgetDirPath();
         this._commands = {};
         this._execs = {};
-        this.on('ready', this._createTray.bind(this));
+        this.on('ready', function () {
+            this._createTray();
+            this.browserWindow = browserWindow.getAllWindows()[0];
+        }.bind(this));
     }
 
     /**
@@ -97,7 +100,7 @@ var Ubershit = function () {
             this.menu = Menu.buildFromTemplate([{
                 label: 'Open Widgets Folder',
                 type: 'normal',
-                click: function click(item, currWindow) {
+                click: function click(item) {
                     shell.showItemInFolder(_this.WIDGET_DIR);
                 }
             }, {
@@ -105,10 +108,9 @@ var Ubershit = function () {
                 type: 'checkbox',
                 checked: false,
                 click: function click(item) {
-                    var currWindow = browserWindow.getAllWindows()[0];
                     var action = item.checked ? 'openDevTools' : 'closeDevTools';
 
-                    currWindow.webContents[action]({
+                    _this.browserWindow.webContents[action]({
                         detach: true
                     });
                 }
@@ -118,7 +120,7 @@ var Ubershit = function () {
                 label: 'Quit Ubershit',
                 type: 'normal',
                 accelerator: 'Command+Q',
-                click: function click(item, currWindow) {
+                click: function click(item) {
                     app.quit();
                 }
             }]);

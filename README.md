@@ -27,7 +27,7 @@ Ubershit compiles all `.html`, `.css`, and `.js` files from the `widgets` (`$use
 
 ```
 
-### Public Methods:
+### Public Properties and Methods:
 The `ubershit` instance exposes a few helpful methods and properties to widgets.
 
 #### `WIDGET_DIR`
@@ -35,7 +35,21 @@ A constant containing the path to the widget directory.
 
 Usage:
 ```javascript
-    myImg.src = `${ubershit.WIDGET_DIR}/playbox/images/default.png`;
+myImg.src = `${ubershit.WIDGET_DIR}/playbox/images/default.png`;
+```
+
+#### `browserWindow`
+An electron [`browserWindow`](https://github.com/atom/electron/blob/master/docs/api/browser-window.md) instance. Useful in `menuItem` click callbacks.
+
+Usage:
+```javascript
+click: ( item ) => {
+    const action = item.checked ? 'openDevTools' : 'closeDevTools';
+
+    this.browserWindow.webContents[action]({
+        detach: true
+    });
+}
 ```
 
 #### `addToMenu( namespace, items )`
