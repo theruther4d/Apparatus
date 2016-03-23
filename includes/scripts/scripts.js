@@ -11,6 +11,7 @@ var Tray = remote.Tray;
 var shell = remote.shell;
 var Menu = remote.Menu;
 var MenuItem = remote.MenuItem;
+var browserWindow = remote.BrowserWindow;
 var osascript = require('osascript');
 var exec = require('child_process').exec;
 var fs = require('fs');
@@ -90,24 +91,23 @@ var Ubershit = function () {
     }, {
         key: '_createTray',
         value: function _createTray() {
+            var _this = this;
+
             // Menu:
             this.menu = Menu.buildFromTemplate([{
                 label: 'Open Widgets Folder',
                 type: 'normal',
                 click: function click(item, currWindow) {
-                    shell.showItemInFolder(window.WIDGET_DIR);
+                    shell.showItemInFolder(_this.WIDGET_DIR);
                 }
             }, {
                 label: 'Show Debug Console',
                 type: 'checkbox',
                 checked: false,
-                click: function click(item, currWindow) {
-                    // const currWindow = mainWindow || window;
-                    if (!currWindow) {
-                        return;
-                    }
-
+                click: function click(item) {
+                    var currWindow = browserWindow.getAllWindows()[0];
                     var action = item.checked ? 'openDevTools' : 'closeDevTools';
+
                     currWindow.webContents[action]({
                         detach: true
                     });

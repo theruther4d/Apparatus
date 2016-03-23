@@ -5,6 +5,7 @@ const Tray = remote.Tray;
 const shell = remote.shell;
 const Menu = remote.Menu;
 const MenuItem = remote.MenuItem;
+const browserWindow = remote.BrowserWindow;
 const osascript = require( 'osascript' );
 const exec = require( 'child_process' ).exec;
 const fs = require( 'fs' );
@@ -73,20 +74,17 @@ class Ubershit {
                 label: 'Open Widgets Folder',
                 type: 'normal',
                 click: ( item, currWindow ) => {
-                    shell.showItemInFolder( window.WIDGET_DIR );
+                    shell.showItemInFolder( this.WIDGET_DIR );
                 }
             },
             {
                 label: 'Show Debug Console',
                 type: 'checkbox',
                 checked: false,
-                click: ( item, currWindow ) => {
-                    // const currWindow = mainWindow || window;
-                    if( !currWindow ) {
-                        return;
-                    }
-
+                click: ( item ) => {
+                    const currWindow = browserWindow.getAllWindows()[0];
                     const action = item.checked ? 'openDevTools' : 'closeDevTools';
+                    
                     currWindow.webContents[action]({
                         detach: true
                     });

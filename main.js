@@ -155,11 +155,11 @@ app.on( 'ready', () => {
     app.dock.hide();
 
     mainWindow = new BrowserWindow({
-        // type: 'desktop',
-        // transparent: true,
-        // frame: false,
-        // resizable: false,
-        // movable: false,
+        type: 'desktop',
+        transparent: true,
+        frame: false,
+        resizable: false,
+        movable: false,
         width: size.width,
         height: size.height
     });
