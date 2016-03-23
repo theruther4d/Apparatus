@@ -1,15 +1,9 @@
-const $ = require( 'nodobjc' );
-const ffi = require( 'ffi' );
-const path = require( 'path' );
-
 /* Blur Class */
 class Blur {
-    constructor( el, blurAmt = 10 ) {
+    constructor( el, blurAmt = 10, wallPaper ) {
         this._target = el;
         this._blurAmt = blurAmt * 2;
-        this._wallPaper = this._getwallPaper();
-        this._watchwallPaper();
-        this._outputCanvas();
+        this._outputCanvas( wallPaper );
     }
 };
 
@@ -19,44 +13,12 @@ const proto = Blur.prototype;
 
 
 /*
- * Gets the current desktop walllpaper.
- *
- * @return {string} wallPaper - the wallPaper URL
-*/
-proto._getwallPaper = function() {
-    const output = String(
-        $.NSWorkspace( 'sharedWorkspace' )(
-            'desktopImageURLForScreen', $.NSScreen( 'mainScreen' )
-        )
-    ).replace( /^file\:\/\/localhost/i, '' );
-
-    return output;
-};
-
-
-/*
- * Redraws the <canvas> each tim the wallpaper changes.
-*/
-proto._watchwallPaper = function() {
-    this._wallPaperWatcher = setInterval( function() {
-        const newwallPaper = this._getwallPaper();
-
-        if( newwallPaper != this._wallPaper ) {
-            this._wallPaper = newwallPaper;
-            this._outputCanvas();
-        }
-
-    }.bind( this ), 2000 );
-};
-
-
-/*
  * Creates a <canvas> element representing the desktop with the current background image and its positioning.
  *
  * @param {function} callback
  * @return {DOM el} canvas - the <canvas> representation of the desktop.
 */
-proto._createDesktopReference = function( callback ) {
+proto._createDesktopReference = function( wallPaper, callback ) {
     // Setup:
     const canvas = document.createElement( 'canvas' );
     const ctx = canvas.getContext( '2d' );
@@ -88,7 +50,7 @@ proto._createDesktopReference = function( callback ) {
         ctx.drawImage( img, 0, 0, imgDimensions.width, imgDimensions.height, offsetX, offsetY, newWidth, newHeight );
         callback( canvas );
     };
-    img.src = this._wallPaper;
+    img.src = wallPaper;
 };
 
 
@@ -103,8 +65,12 @@ proto._createOutputCanvas = function( reference ) {
 
     if( this._ctx ) {
         this._canvas.classList.add( 'hidden' );
-        this._ctx.clearRect(0, 0, dimensions.width + this._blurAmt, dimensions.height + this._blurAmt );
-        this._ctx.drawImage( reference, dimensions.left, dimensions.top, reference.width + this._blurAmt, reference.height + this._blurAmt, 0, 0, reference.width, reference.height );
+
+        setTimeout( function() {
+            this._ctx.clearRect(0, 0, dimensions.width + this._blurAmt, dimensions.height + this._blurAmt );
+            this._ctx.drawImage( reference, dimensions.left - 8, dimensions.top - 32, reference.width + this._blurAmt, reference.height + this._blurAmt, 0, 0, reference.width, reference.height );
+        }.bind( this ), 500 );
+
         setTimeout( function() {
             this._canvas.classList.remove( 'hidden' );
         }.bind( this ), 750 );
@@ -114,17 +80,13 @@ proto._createOutputCanvas = function( reference ) {
     const canvas = document.createElement( 'canvas' );
     const ctx = canvas.getContext( '2d' );
 
-    // @TODO:
-    // * canvas drawing area isn't right on the x-axis, too small
-    // * aligment is slightly off, perhaps bc of ^
-    // canvas.style.backgroundColor = 'red';
     canvas.width = dimensions.width + ( this._blurAmt );
     canvas.height = dimensions.height + ( this._blurAmt );
     canvas.classList.add( 'ubershit-blur' );
     canvas.style.top = `${( this._blurAmt / 2 ) * -1}px`;
     canvas.style.left = `${( this._blurAmt / 2 ) * -1}px`;
     canvas.style.webkitFilter = `blur( ${this._blurAmt / 2}px )`;
-    ctx.drawImage( reference, dimensions.left, dimensions.top, reference.width, reference.height, 0, 0, reference.width + ( this._blurAmt * 4 ), reference.height + ( this._blurAmt * 4 ) );
+    ctx.drawImage( reference, dimensions.left - 8, dimensions.top - 32, reference.width, reference.height, 0, 0, reference.width + ( this._blurAmt * 2 ), reference.height + ( this._blurAmt * 2 ) );
 
     return canvas;
 };
@@ -133,8 +95,8 @@ proto._createOutputCanvas = function( reference ) {
 /*
  * Adds the <canvas> to the DOM.
 */
-proto._outputCanvas = function() {
-    this._createDesktopReference( function( canvas ) {
+proto._outputCanvas = function( wallPaper ) {
+    this._createDesktopReference( wallPaper, function( canvas ) {
         const slice = this._createOutputCanvas( canvas );
 
         // Don't output <canvas> again if it already exists:
@@ -159,6 +121,16 @@ proto._outputCanvas = function() {
 };
 
 
-$.framework( 'cocoa' );
+proto.hide = function() {
+    this._target.removeChild( this._canvas );
+}
+
+proto.show = function() {
+    this._target.appendChild( this._canvas );
+}
+
+proto.update = function( wallPaper ) {
+    this._outputCanvas( wallPaper );
+}
 
 window.Blur = Blur;

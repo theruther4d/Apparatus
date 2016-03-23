@@ -9,6 +9,9 @@ const browserWindow = remote.BrowserWindow;
 const osascript = require( 'osascript' );
 const exec = require( 'child_process' ).exec;
 const fs = require( 'fs' );
+const $ = require( 'nodobjc' );
+// const ffi = require( 'ffi' );
+// const path = require( 'path' );
 
 /** Ubershit Class */
 class Ubershit {
@@ -17,6 +20,7 @@ class Ubershit {
         this.WIDGET_DIR = this._getWidgetDirPath();
         this._commands = {};
         this._execs = {};
+        this._blurs = [];
         this.on( 'ready', function() {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0]
@@ -90,6 +94,16 @@ class Ubershit {
                     this.browserWindow.webContents[action]({
                         detach: true
                     });
+                }
+            },
+            {
+                label: 'Hide blur effect.',
+                type: 'checkbox',
+                checked: false,
+                click: ( item ) => {
+                    const action = item.checked ? '_hideBlurs' : '_showBlurs';
+
+                    this[action]();
                 }
             },
             {
@@ -170,11 +184,76 @@ class Ubershit {
     }
 
     /**
+     * Executes a shell script.
+     *
+     * @param {string} command
+     * @param {function} options
+     * @param {integer} callback
+     */
+    exec( command, options, callback ) {
+        exec( command, options, callback );
+    }
+
+    /*
+     * Gets the current desktop walllpaper.
+     *
+     * @return {string} wallPaper - the wallPaper URL
+    */
+    _getwallPaper() {
+        const output = String(
+            $.NSWorkspace( 'sharedWorkspace' )(
+                'desktopImageURLForScreen', $.NSScreen( 'mainScreen' )
+            )
+        ).replace( /^file\:\/\/localhost/i, '' );
+
+        return output;
+    }
+
+
+    /*
+     * Redraws the <canvas> each tim the wallpaper changes.
+    */
+    _watchwallPaper() {
+        return setInterval( function() {
+            const newwallPaper = this._getwallPaper();
+
+            if( newwallPaper != this._wallPaper ) {
+                this._wallPaper = newwallPaper;
+                this._updateBlurs( this._wallPaper );
+            }
+        }.bind( this ), 1 );
+    }
+
+    /**
      * Makes Blur Class publicly available.
      */
     blur( el, blurAmt = 10 ) {
-        return new Blur( el, blurAmt );
+        this._wallPaper = this._wallPaper || this._getwallPaper();
+        this._wallPaperWatcher = this._wallPaperWatcher || this._watchwallPaper();
+
+        const newBlur = new Blur( el, blurAmt, this._wallPaper );
+        this._blurs.push( newBlur );
+        return newBlur;
+    }
+
+    _updateBlurs( wallPaper ) {
+        this._blurs.forEach( ( blur ) => {
+            blur.update( wallPaper );
+        });
+    }
+
+    _hideBlurs() {
+        this._blurs.forEach( ( blur ) => {
+            blur.hide();
+        });
+    }
+
+    _showBlurs() {
+        this._blurs.forEach( ( blur ) => {
+            blur.show();
+        })
     }
 };
 
 window.ubershit = new Ubershit();
+$.framework( 'cocoa' );

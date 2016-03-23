@@ -4,15 +4,6 @@
     box-sizing: border-box;
 }
 
-// #bozo {
-//     opacity: 0.5;
-//     position: absolute;
-//     top: 0;
-//     left: 0;
-//     z-index: 100;
-//     // border: 5px solid red;
-// }
-
 html,
 body {
     width: 100%;
@@ -29,7 +20,6 @@ body {
     transition: opacity 0.25s ease;
 
     &.hidden {
-        transition: opacity 0.1s ease;
         opacity: 0;
     }
 }
