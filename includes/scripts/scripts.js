@@ -4,6 +4,62 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var Events = function () {
+    function Events() {
+        _classCallCheck(this, Events);
+    }
+
+    /**
+    * Bind an event by name:
+    *
+    * @param {string} eventName - a single event, or multiple events separated by spaces \n.
+    * @param {function} callBack
+    */
+
+
+    _createClass(Events, [{
+        key: 'on',
+        value: function on(eventName, callBack) {
+            if (eventName.indexOf(' ') > -1) {
+                eventName.split(' ').forEach(function (name) {
+                    this._attachEvent(name, callBack);
+                }.bind(this));
+            } else {
+                this._attachEvent(eventName, callBack);
+            }
+        }
+
+        /**
+        * Trigger the event by name:
+        *
+        * @param {string} eventName
+        */
+
+    }, {
+        key: 'trigger',
+        value: function trigger(eventName) {
+            if (!this._hasEvent(eventName)) {
+                return false;
+            }
+
+            this._events[eventName].forEach(function (callBack) {
+                callBack(eventName);
+            });
+        }
+    }]);
+
+    return Events;
+}();
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var electron = require('electron');
 var remote = electron.remote;
 var app = remote.app;
@@ -20,27 +76,31 @@ var ffi = require('ffi');
 
 /** Ubershit Class */
 
-var Ubershit = function () {
+var Ubershit = function (_Events) {
+    _inherits(Ubershit, _Events);
+
     function Ubershit() {
         _classCallCheck(this, Ubershit);
 
-        this._events = {};
-        this.WIDGET_DIR = this._getWidgetDirPath();
-        this.OUTPUT_DIR = this._getOuputDirPath();
-        this._commands = {};
-        this._execs = {};
-        this._blurs = [];
-        this._blurHidden = false;
-        this._checkBlurPreference();
+        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Ubershit).call(this));
+
+        _this._events = {};
+        _this.WIDGET_DIR = _this._getWidgetDirPath();
+        _this.OUTPUT_DIR = _this._getOuputDirPath();
+        _this._commands = {};
+        _this._execs = {};
+        _this._blurs = [];
+        _this._blurHidden = false;
+        _this._checkBlurPreference();
 
         // Handles setup for the first load:
-        this.on('ready', function () {
+        _this.on('ready', function () {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0];
-        }.bind(this));
+        }.bind(_this));
 
         // Tear down our menu/tray when we're going to reload:
-        this.on('willReload', function () {
+        _this.on('willReload', function () {
             if (this._tray) {
                 this._tray.destroy();
                 this._tray = null;
@@ -48,16 +108,17 @@ var Ubershit = function () {
 
             this.browserWindow = null;
             this.menu = null;
-        }.bind(this));
+        }.bind(_this));
 
         // Rebuild menu/tray when we're done reloading:
-        this.on('didReload', function () {
+        _this.on('didReload', function () {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0];
 
             // Let the widgets know we've changed the menu:
             this.trigger('menuChanged');
-        }.bind(this));
+        }.bind(_this));
+        return _this;
     }
 
     /**
@@ -133,50 +194,13 @@ var Ubershit = function () {
         }
 
         /**
-         * Bind an event by name:
-         *
-         * @param {string} eventName - a single event, or multiple events separated by spaces \n.
-         * @param {function} callBack
-         */
-
-    }, {
-        key: 'on',
-        value: function on(eventName, callBack) {
-            if (eventName.indexOf(' ') > -1) {
-                eventName.split(' ').forEach(function (name) {
-                    this._attachEvent(name, callBack);
-                }.bind(this));
-            } else {
-                this._attachEvent(eventName, callBack);
-            }
-        }
-
-        /**
-         * Trigger the event by name:
-         *
-         * @param {string} eventName
-         */
-
-    }, {
-        key: 'trigger',
-        value: function trigger(eventName) {
-            if (!this._hasEvent(eventName)) {
-                return false;
-            }
-
-            this._events[eventName].forEach(function (callBack) {
-                callBack(eventName);
-            });
-        }
-
-        /**
          * Creates the tray icon and initial context menu.
          */
 
     }, {
         key: '_createTray',
         value: function _createTray() {
-            var _this = this;
+            var _this2 = this;
 
             this._tray = new Tray(__dirname + '/iconTemplate.png');
 
@@ -185,7 +209,7 @@ var Ubershit = function () {
                 label: 'Open Widgets Folder',
                 type: 'normal',
                 click: function click(item) {
-                    shell.showItemInFolder(_this.WIDGET_DIR);
+                    shell.showItemInFolder(_this2.WIDGET_DIR);
                 }
             }, {
                 label: 'Show Debug Console',
@@ -194,7 +218,7 @@ var Ubershit = function () {
                 click: function click(item) {
                     var action = item.checked ? 'openDevTools' : 'closeDevTools';
 
-                    _this.browserWindow.webContents[action]({
+                    _this2.browserWindow.webContents[action]({
                         detach: true
                     });
                 }
@@ -208,12 +232,12 @@ var Ubershit = function () {
 
                     localStorage.setItem('hideBlurEffect', item.checked);
 
-                    if (_this._blurHidden && !item.checked) {
-                        _this._blurHidden = true;
-                        _this._showBlurs();
+                    if (_this2._blurHidden && !item.checked) {
+                        _this2._blurHidden = true;
+                        _this2._showBlurs();
                     }
                     document.documentElement.classList[classAction]('no-blur');
-                    _this[action]();
+                    _this2[action]();
                 }
             }, {
                 type: 'separator'
@@ -399,7 +423,7 @@ var Ubershit = function () {
     }]);
 
     return Ubershit;
-}();
+}(Events);
 
 ;
 
