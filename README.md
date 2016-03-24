@@ -89,6 +89,19 @@ ubershit.command( `${WIDGET_DIR}/playbox/as/getTrack.applescript`, ( err, res ) 
 }, 1000 );
 ```
 
+#### `exec( command, options, callback)`:
+A wrapper around node [`child_processes.exec`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback).
+* `command` string - Shell command to execute.
+* `options` object - See the [node documentation](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback) for more info.
+* `callback` function - Receives `error` and `response` as arguments.
+
+Usage:
+```javascript
+ubershit.exec( 'pwd', ( err, res ) => {
+    // do something
+});
+```
+
 #### `Blur( el, amt )`:
 A class for creating blurred backgrounds. Takes a wrapper element an appends a `<canvas>` with the portion of the desktop that sits behind the wrapper element.
 * `el` DOM node - The element to measure and append the `<canvas>` to.

@@ -239,7 +239,7 @@ var Ubershit = function () {
         }
 
         /*
-         * Redraws the <canvas> each tim the wallpaper changes.
+         * Watches the desktop for background changes.
         */
 
     }, {
@@ -271,6 +271,13 @@ var Ubershit = function () {
             this._blurs.push(newBlur);
             return newBlur;
         }
+
+        /**
+         * Updates all active blurs.
+         *
+         * @param {string} wallpaper - the wallpaper url
+         */
+
     }, {
         key: '_updateBlurs',
         value: function _updateBlurs(wallPaper) {
@@ -278,6 +285,11 @@ var Ubershit = function () {
                 blur.update(wallPaper);
             });
         }
+
+        /**
+         * Hides all blur instances.
+         */
+
     }, {
         key: '_hideBlurs',
         value: function _hideBlurs() {
@@ -285,6 +297,11 @@ var Ubershit = function () {
                 blur.hide();
             });
         }
+
+        /**
+         * Shows all blur instances.
+         */
+
     }, {
         key: '_showBlurs',
         value: function _showBlurs() {
@@ -300,6 +317,7 @@ var Ubershit = function () {
 ;
 
 window.ubershit = new Ubershit();
+
 $.framework('cocoa');
 'use strict';
 

@@ -211,7 +211,7 @@ class Ubershit {
 
 
     /*
-     * Redraws the <canvas> each tim the wallpaper changes.
+     * Watches the desktop for background changes.
     */
     _watchwallPaper() {
         return setInterval( function() {
@@ -236,18 +236,32 @@ class Ubershit {
         return newBlur;
     }
 
+
+    /**
+     * Updates all active blurs.
+     *
+     * @param {string} wallpaper - the wallpaper url
+     */
     _updateBlurs( wallPaper ) {
         this._blurs.forEach( ( blur ) => {
             blur.update( wallPaper );
         });
     }
 
+
+    /**
+     * Hides all blur instances.
+     */
     _hideBlurs() {
         this._blurs.forEach( ( blur ) => {
             blur.hide();
         });
     }
 
+
+    /**
+     * Shows all blur instances.
+     */
     _showBlurs() {
         this._blurs.forEach( ( blur ) => {
             blur.show();
@@ -256,4 +270,5 @@ class Ubershit {
 };
 
 window.ubershit = new Ubershit();
+
 $.framework( 'cocoa' );
