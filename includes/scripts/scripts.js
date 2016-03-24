@@ -16,8 +16,7 @@ var osascript = require('osascript');
 var _exec = require('child_process').exec;
 var fs = require('fs');
 var $ = require('nodobjc');
-// const ffi = require( 'ffi' );
-// const path = require( 'path' );
+var ffi = require('ffi');
 
 /** Ubershit Class */
 
@@ -30,18 +29,30 @@ var Ubershit = function () {
         this._commands = {};
         this._execs = {};
         this._blurs = [];
+        this._blurHidden = false;
+        this._checkBlurPreference();
         this.on('ready', function () {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0];
         }.bind(this));
     }
 
-    /**
-     * Returns the widget directory path.
-     */
-
-
     _createClass(Ubershit, [{
+        key: '_checkBlurPreference',
+        value: function _checkBlurPreference() {
+            var hideBlur = localStorage.getItem('hideBlurEffect') === 'true';
+
+            if (hideBlur) {
+                this._blurHidden = true;
+                document.documentElement.classList.add('no-blur');
+            }
+        }
+
+        /**
+         * Returns the widget directory path.
+         */
+
+    }, {
         key: '_getWidgetDirPath',
         value: function _getWidgetDirPath() {
             var WIDGET_DIR = __dirname.split('/');
@@ -121,10 +132,18 @@ var Ubershit = function () {
             }, {
                 label: 'Hide blur effect.',
                 type: 'checkbox',
-                checked: false,
+                checked: this._blurHidden,
                 click: function click(item) {
                     var action = item.checked ? '_hideBlurs' : '_showBlurs';
+                    var classAction = item.checked ? 'add' : 'remove';
 
+                    localStorage.setItem('hideBlurEffect', item.checked);
+
+                    if (_this._blurHidden && !item.checked) {
+                        _this._blurHidden = true;
+                        _this._showBlurs();
+                    }
+                    document.documentElement.classList[classAction]('no-blur');
                     _this[action]();
                 }
             }, {
@@ -267,7 +286,7 @@ var Ubershit = function () {
             this._wallPaper = this._wallPaper || this._getwallPaper();
             this._wallPaperWatcher = this._wallPaperWatcher || this._watchwallPaper();
 
-            var newBlur = new Blur(el, blurAmt, this._wallPaper);
+            var newBlur = new Blur(el, blurAmt, this._wallPaper, !this._blurHidden);
             this._blurs.push(newBlur);
             return newBlur;
         }
@@ -328,12 +347,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Blur = function Blur(el) {
     var blurAmt = arguments.length <= 1 || arguments[1] === undefined ? 10 : arguments[1];
     var wallPaper = arguments[2];
+    var inject = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
 
     _classCallCheck(this, Blur);
 
     this._target = el;
     this._blurAmt = blurAmt * 2;
-    this._outputCanvas(wallPaper);
+    this._visible = inject;
+    this._outputCanvas(wallPaper, inject);
 };
 
 ;
@@ -422,7 +443,7 @@ proto._createOutputCanvas = function (reference) {
 /*
  * Adds the <canvas> to the DOM.
 */
-proto._outputCanvas = function (wallPaper) {
+proto._outputCanvas = function (wallPaper, inject) {
     this._createDesktopReference(wallPaper, function (canvas) {
         var slice = this._createOutputCanvas(canvas);
 
@@ -437,22 +458,29 @@ proto._outputCanvas = function (wallPaper) {
             this._target.style.position = 'relative';
         }
 
-        slice.classList.add('hidden');
-        this._target.appendChild(slice);
-        setTimeout(function () {
-            slice.classList.remove('hidden');
-        }.bind(this), 350);
         this._canvas = slice;
         this._ctx = slice.getContext('2d');
+
+        if (inject) {
+            this.show();
+        }
     }.bind(this));
 };
 
 proto.hide = function () {
-    this._target.removeChild(this._canvas);
+    if (this._visible) {
+        this._target.removeChild(this._canvas);
+        this._visible = false;
+    }
 };
 
 proto.show = function () {
+    this._canvas.classList.add('hidden');
     this._target.appendChild(this._canvas);
+    setTimeout(function () {
+        this._canvas.classList.remove('hidden');
+    }.bind(this), 350);
+    this._visible = true;
 };
 
 proto.update = function (wallPaper) {

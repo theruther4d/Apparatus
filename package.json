@@ -10,14 +10,14 @@
   "license": "ISC",
   "dependencies": {
     "chokidar": "^1.4.3",
+    "ffi": "^2.0.0",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.0",
     "gulp-insert": "^0.5.0",
     "gulp-rename": "^1.2.2",
     "gulp-watch": "^4.3.5",
     "nodobjc": "^2.1.0",
-    "osascript": "^1.2.0",
-    "path": "^0.12.7"
+    "osascript": "^1.2.0"
   },
   "devDependencies": {
     "gulp-replace": "^0.5.4",

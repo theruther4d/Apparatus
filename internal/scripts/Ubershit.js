@@ -10,8 +10,7 @@ const osascript = require( 'osascript' );
 const exec = require( 'child_process' ).exec;
 const fs = require( 'fs' );
 const $ = require( 'nodobjc' );
-// const ffi = require( 'ffi' );
-// const path = require( 'path' );
+const ffi = require( 'ffi' );
 
 /** Ubershit Class */
 class Ubershit {
@@ -21,10 +20,21 @@ class Ubershit {
         this._commands = {};
         this._execs = {};
         this._blurs = [];
+        this._blurHidden = false;
+        this._checkBlurPreference();
         this.on( 'ready', function() {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0]
         }.bind( this ) );
+    }
+
+    _checkBlurPreference() {
+        const hideBlur = localStorage.getItem( 'hideBlurEffect' ) === 'true';
+
+        if( hideBlur ) {
+            this._blurHidden = true;
+            document.documentElement.classList.add( 'no-blur' );
+        }
     }
 
     /**
@@ -99,10 +109,18 @@ class Ubershit {
             {
                 label: 'Hide blur effect.',
                 type: 'checkbox',
-                checked: false,
+                checked: this._blurHidden,
                 click: ( item ) => {
                     const action = item.checked ? '_hideBlurs' : '_showBlurs';
+                    const classAction = item.checked ? 'add' : 'remove';
 
+                    localStorage.setItem( 'hideBlurEffect', item.checked );
+
+                    if( this._blurHidden && !item.checked ) {
+                        this._blurHidden = true;
+                        this._showBlurs();
+                    }
+                    document.documentElement.classList[classAction]( 'no-blur' );
                     this[action]();
                 }
             },
@@ -231,7 +249,7 @@ class Ubershit {
         this._wallPaper = this._wallPaper || this._getwallPaper();
         this._wallPaperWatcher = this._wallPaperWatcher || this._watchwallPaper();
 
-        const newBlur = new Blur( el, blurAmt, this._wallPaper );
+        const newBlur = new Blur( el, blurAmt, this._wallPaper, !this._blurHidden );
         this._blurs.push( newBlur );
         return newBlur;
     }

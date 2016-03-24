@@ -1,9 +1,10 @@
 /* Blur Class */
 class Blur {
-    constructor( el, blurAmt = 10, wallPaper ) {
+    constructor( el, blurAmt = 10, wallPaper, inject = true ) {
         this._target = el;
         this._blurAmt = blurAmt * 2;
-        this._outputCanvas( wallPaper );
+        this._visible = inject;
+        this._outputCanvas( wallPaper, inject );
     }
 };
 
@@ -95,7 +96,7 @@ proto._createOutputCanvas = function( reference ) {
 /*
  * Adds the <canvas> to the DOM.
 */
-proto._outputCanvas = function( wallPaper ) {
+proto._outputCanvas = function( wallPaper, inject ) {
     this._createDesktopReference( wallPaper, function( canvas ) {
         const slice = this._createOutputCanvas( canvas );
 
@@ -110,23 +111,30 @@ proto._outputCanvas = function( wallPaper ) {
             this._target.style.position = 'relative';
         }
 
-        slice.classList.add( 'hidden' );
-        this._target.appendChild( slice );
-        setTimeout( function() {
-            slice.classList.remove( 'hidden' );
-        }.bind( this ), 350 );
         this._canvas = slice;
         this._ctx = slice.getContext( '2d' );
+
+        if( inject ) {
+            this.show();
+        }
     }.bind( this ) );
 };
 
 
 proto.hide = function() {
-    this._target.removeChild( this._canvas );
+    if( this._visible ) {
+        this._target.removeChild( this._canvas );
+        this._visible = false;
+    }
 }
 
 proto.show = function() {
+    this._canvas.classList.add( 'hidden' );
     this._target.appendChild( this._canvas );
+    setTimeout( function() {
+        this._canvas.classList.remove( 'hidden' );
+    }.bind( this ), 350 );
+    this._visible = true;
 }
 
 proto.update = function( wallPaper ) {

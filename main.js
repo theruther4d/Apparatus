@@ -127,9 +127,8 @@ if( !fs.existsSync( NPM_DIR) ) {
     fs.mkdir( NPM_DIR, ( err ) => {
         makeNodeModuleSymlinks([
             'osascript',
-            'nodobjc',
             'ffi',
-            'path',
+            'nodobjc',
             'gulp',
             'gulp-concat',
             'gulp-insert',
