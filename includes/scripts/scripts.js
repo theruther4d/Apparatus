@@ -1,5 +1,7 @@
 'use strict';
 
+/** A class for listening and responding to events. */
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7,17 +9,49 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Events = function () {
     function Events() {
         _classCallCheck(this, Events);
+
+        this._events = {};
     }
 
     /**
-    * Bind an event by name:
-    *
-    * @param {string} eventName - a single event, or multiple events separated by spaces \n.
-    * @param {function} callBack
-    */
+     * Check if this instance contains an event by name.
+     *
+     * @param {string} eventName
+     */
 
 
     _createClass(Events, [{
+        key: '_hasEvent',
+        value: function _hasEvent(eventName) {
+            return this._events.hasOwnProperty(eventName);
+        }
+
+        /*
+         * Does the actual event attaching for .on()
+         *
+         * @param {string} eventName - a single event.
+         * @param {function} callBack
+         */
+
+    }, {
+        key: '_attachEvent',
+        value: function _attachEvent(eventName, callBack) {
+            if (!this._hasEvent(eventName)) {
+                this._events[eventName] = [callBack];
+                return;
+            }
+
+            this._events[eventName].push(callBack);
+        }
+
+        /**
+        * Bind an event by name:
+        *
+        * @param {string} eventName - a single event, or multiple events separated by spaces \n.
+        * @param {function} callBack
+        */
+
+    }, {
         key: 'on',
         value: function on(eventName, callBack) {
             if (eventName.indexOf(' ') > -1) {
@@ -52,6 +86,85 @@ var Events = function () {
 }();
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * Preference Class. Manages a persistent user preferences kept in local storage.
+ *
+ * @param {string} name - The identifier for the preference.
+ * @param {any} value - The default value. If a previously set value is found in storage, that will be used.
+ * @param {function} callBack - Triggers when the value changes.
+ */
+
+var Preference = function (_Events) {
+    _inherits(Preference, _Events);
+
+    function Preference(name, value, callBack) {
+        _classCallCheck(this, Preference);
+
+        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Preference).call(this));
+
+        _this._name = name;
+        _this._callBack = callBack;
+
+        // Check if we're already set in localStorage:
+        var previousValue = localStorage.getItem(_this._name);
+        if (previousValue === null && (typeof previousValue === 'undefined' ? 'undefined' : _typeof(previousValue)) === 'object') {
+            // set it up:
+            _this.value = value;
+        } else {
+            // Use what's already there:
+            _this.value = previousValue;
+        }
+
+        // Let everybody know when we change:
+        _this.on('valueChanged', function () {
+            this._callBack(this.value);
+        }.bind(_this));
+        return _this;
+    }
+
+    /**
+     * Getter for value.
+     */
+
+
+    _createClass(Preference, [{
+        key: 'value',
+        get: function get() {
+            return localStorage.getItem(this._name);
+        }
+
+        /**
+         * Setter for value.
+         *
+         * @param {any} newValue
+         */
+        ,
+        set: function set(newValue) {
+            if (newValue === this._value) {
+                return this._value;
+            }
+
+            localStorage.setItem(this._name, newValue);
+            this.trigger('valueChanged');
+        }
+    }]);
+
+    return Preference;
+}(Events);
+
+;
+'use strict';
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -84,14 +197,15 @@ var Ubershit = function (_Events) {
 
         var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Ubershit).call(this));
 
-        _this._events = {};
         _this.WIDGET_DIR = _this._getWidgetDirPath();
         _this.OUTPUT_DIR = _this._getOuputDirPath();
         _this._commands = {};
         _this._execs = {};
         _this._blurs = [];
-        _this._blurHidden = false;
-        _this._checkBlurPreference();
+        _this._blursVisible = new Preference('blursVisible', true, function (newValue) {
+            var action = newValue === 'true' ? '_showBlurs' : '_hideBlurs';
+            this[action]();
+        }.bind(_this));
 
         // Handles setup for the first load:
         _this.on('ready', function () {
@@ -122,26 +236,11 @@ var Ubershit = function (_Events) {
     }
 
     /**
-     * Checks for previously set user preferences.
+     * Returns the widget directory path.
      */
 
 
     _createClass(Ubershit, [{
-        key: '_checkBlurPreference',
-        value: function _checkBlurPreference() {
-            var hideBlur = localStorage.getItem('hideBlurEffect') === 'true';
-
-            if (hideBlur) {
-                this._blurHidden = true;
-                document.documentElement.classList.add('no-blur');
-            }
-        }
-
-        /**
-         * Returns the widget directory path.
-         */
-
-    }, {
         key: '_getWidgetDirPath',
         value: function _getWidgetDirPath() {
             var WIDGET_DIR = __dirname.split('/');
@@ -161,36 +260,6 @@ var Ubershit = function (_Events) {
             OUTPUT_DIR.splice(-1, 1);
             OUTPUT_DIR = OUTPUT_DIR.join('/') + '/dist';
             return OUTPUT_DIR;
-        }
-
-        /**
-         * Check if this instance contains an event by name.
-         *
-         * @param {string} eventName
-         */
-
-    }, {
-        key: '_hasEvent',
-        value: function _hasEvent(eventName) {
-            return this._events.hasOwnProperty(eventName);
-        }
-
-        /*
-         * Does the actual event attaching for .on()
-         *
-         * @param {string} eventName - a single event.
-         * @param {function} callBack
-         */
-
-    }, {
-        key: '_attachEvent',
-        value: function _attachEvent(eventName, callBack) {
-            if (!this._hasEvent(eventName)) {
-                this._events[eventName] = [callBack];
-                return;
-            }
-
-            this._events[eventName].push(callBack);
         }
 
         /**
@@ -225,19 +294,11 @@ var Ubershit = function (_Events) {
             }, {
                 label: 'Hide blur effect.',
                 type: 'checkbox',
-                checked: this._blurHidden,
+                checked: this._blursVisible.value === 'false',
                 click: function click(item) {
-                    var action = item.checked ? '_hideBlurs' : '_showBlurs';
+                    _this2._blursVisible.value = !item.checked;
                     var classAction = item.checked ? 'add' : 'remove';
-
-                    localStorage.setItem('hideBlurEffect', item.checked);
-
-                    if (_this2._blurHidden && !item.checked) {
-                        _this2._blurHidden = true;
-                        _this2._showBlurs();
-                    }
                     document.documentElement.classList[classAction]('no-blur');
-                    _this2[action]();
                 }
             }, {
                 type: 'separator'
@@ -378,7 +439,7 @@ var Ubershit = function (_Events) {
             this._wallPaper = this._wallPaper || this._getwallPaper();
             this._wallPaperWatcher = this._wallPaperWatcher || this._watchwallPaper();
 
-            var newBlur = new Blur(el, blurAmt, this._wallPaper, !this._blurHidden);
+            var newBlur = new Blur(el, blurAmt, this._wallPaper, this._blursVisible.value === 'true');
             this._blurs.push(newBlur);
             return newBlur;
         }
@@ -581,17 +642,3 @@ proto.update = function (wallPaper) {
 };
 
 window.Blur = Blur;
-// class Options {
-//     constructor() {
-//
-//     },
-//
-//     get( name ) {
-//         return localStorage.getItem( name );
-//     }
-//
-//     set( name, value ) {
-//         return localStorage.setItem( name, value );
-//     }
-// }
-"use strict";

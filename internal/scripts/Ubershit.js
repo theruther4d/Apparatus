@@ -16,14 +16,15 @@ const ffi = require( 'ffi' );
 class Ubershit extends Events {
     constructor() {
         super();
-        this._events = {};
         this.WIDGET_DIR = this._getWidgetDirPath();
         this.OUTPUT_DIR = this._getOuputDirPath();
         this._commands = {};
         this._execs = {};
         this._blurs = [];
-        this._blurHidden = false;
-        this._checkBlurPreference();
+        this._blursVisible = new Preference( 'blursVisible', true, function( newValue ) {
+            const action = newValue === 'true' ? '_showBlurs' : '_hideBlurs';
+            this[action]();
+        }.bind( this ) );
 
         // Handles setup for the first load:
         this.on( 'ready', function() {
@@ -54,19 +55,6 @@ class Ubershit extends Events {
 
 
     /**
-     * Checks for previously set user preferences.
-     */
-    _checkBlurPreference() {
-        const hideBlur = localStorage.getItem( 'hideBlurEffect' ) === 'true';
-
-        if( hideBlur ) {
-            this._blurHidden = true;
-            document.documentElement.classList.add( 'no-blur' );
-        }
-    }
-
-
-    /**
      * Returns the widget directory path.
      */
     _getWidgetDirPath() {
@@ -85,32 +73,6 @@ class Ubershit extends Events {
         OUTPUT_DIR.splice( -1, 1 );
         OUTPUT_DIR = `${OUTPUT_DIR.join( '/' )}/dist`
         return OUTPUT_DIR;
-    }
-
-
-    /**
-     * Check if this instance contains an event by name.
-     *
-     * @param {string} eventName
-     */
-    _hasEvent( eventName ) {
-        return this._events.hasOwnProperty( eventName );
-    }
-
-
-    /*
-     * Does the actual event attaching for .on()
-     *
-     * @param {string} eventName - a single event.
-     * @param {function} callBack
-     */
-    _attachEvent( eventName, callBack ) {
-        if( !this._hasEvent( eventName ) ) {
-            this._events[eventName] = [ callBack ];
-            return;
-        }
-
-        this._events[eventName].push( callBack );
     }
 
 
@@ -144,19 +106,11 @@ class Ubershit extends Events {
             {
                 label: 'Hide blur effect.',
                 type: 'checkbox',
-                checked: this._blurHidden,
+                checked: this._blursVisible.value === 'false',
                 click: ( item ) => {
-                    const action = item.checked ? '_hideBlurs' : '_showBlurs';
+                    this._blursVisible.value = !item.checked;
                     const classAction = item.checked ? 'add' : 'remove';
-
-                    localStorage.setItem( 'hideBlurEffect', item.checked );
-
-                    if( this._blurHidden && !item.checked ) {
-                        this._blurHidden = true;
-                        this._showBlurs();
-                    }
                     document.documentElement.classList[classAction]( 'no-blur' );
-                    this[action]();
                 }
             },
             {
@@ -288,7 +242,7 @@ class Ubershit extends Events {
         this._wallPaper = this._wallPaper || this._getwallPaper();
         this._wallPaperWatcher = this._wallPaperWatcher || this._watchwallPaper();
 
-        const newBlur = new Blur( el, blurAmt, this._wallPaper, !this._blurHidden );
+        const newBlur = new Blur( el, blurAmt, this._wallPaper, this._blursVisible.value === 'true' );
         this._blurs.push( newBlur );
         return newBlur;
     }

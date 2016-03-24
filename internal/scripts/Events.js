@@ -1,8 +1,34 @@
 'use strict';
 
+/** A class for listening and responding to events. */
 class Events {
     constructor() {
+        this._events = {};
+    }
 
+    /**
+     * Check if this instance contains an event by name.
+     *
+     * @param {string} eventName
+     */
+    _hasEvent( eventName ) {
+        return this._events.hasOwnProperty( eventName );
+    }
+
+
+    /*
+     * Does the actual event attaching for .on()
+     *
+     * @param {string} eventName - a single event.
+     * @param {function} callBack
+     */
+    _attachEvent( eventName, callBack ) {
+        if( !this._hasEvent( eventName ) ) {
+            this._events[eventName] = [ callBack ];
+            return;
+        }
+
+        this._events[eventName].push( callBack );
     }
 
     /**
