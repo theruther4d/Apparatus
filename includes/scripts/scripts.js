@@ -33,26 +33,37 @@ var Ubershit = function () {
         this._blurHidden = false;
         this._checkBlurPreference();
 
+        // Handles setup for the first load:
         this.on('ready', function () {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0];
         }.bind(this));
 
+        // Tear down our menu/tray when we're going to reload:
         this.on('willReload', function () {
             if (this._tray) {
                 this._tray.destroy();
                 this._tray = null;
-                this.browserWindow = null;
             }
 
+            this.browserWindow = null;
             this.menu = null;
         }.bind(this));
 
+        // Rebuild menu/tray when we're done reloading:
         this.on('didReload', function () {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0];
+
+            // Let the widgets know we've changed the menu:
+            this.trigger('menuChanged');
         }.bind(this));
     }
+
+    /**
+     * Checks for previously set user preferences.
+     */
+
 
     _createClass(Ubershit, [{
         key: '_checkBlurPreference',
@@ -93,6 +104,8 @@ var Ubershit = function () {
 
         /**
          * Check if this instance contains an event by name.
+         *
+         * @param {string} eventName
          */
 
     }, {
@@ -101,13 +114,16 @@ var Ubershit = function () {
             return this._events.hasOwnProperty(eventName);
         }
 
-        /**
-         * Bind an event by name:
+        /*
+         * Does the actual event attaching for .on()
+         *
+         * @param {string} eventName - a single event.
+         * @param {function} callBack
          */
 
     }, {
-        key: 'on',
-        value: function on(eventName, callBack) {
+        key: '_attachEvent',
+        value: function _attachEvent(eventName, callBack) {
             if (!this._hasEvent(eventName)) {
                 this._events[eventName] = [callBack];
                 return;
@@ -117,7 +133,28 @@ var Ubershit = function () {
         }
 
         /**
+         * Bind an event by name:
+         *
+         * @param {string} eventName - a single event, or multiple events separated by spaces \n.
+         * @param {function} callBack
+         */
+
+    }, {
+        key: 'on',
+        value: function on(eventName, callBack) {
+            if (eventName.indexOf(' ') > -1) {
+                eventName.split(' ').forEach(function (name) {
+                    this._attachEvent(name, callBack);
+                }.bind(this));
+            } else {
+                this._attachEvent(eventName, callBack);
+            }
+        }
+
+        /**
          * Trigger the event by name:
+         *
+         * @param {string} eventName
          */
 
     }, {
@@ -128,7 +165,7 @@ var Ubershit = function () {
             }
 
             this._events[eventName].forEach(function (callBack) {
-                callBack();
+                callBack(eventName);
             });
         }
 
@@ -200,7 +237,7 @@ var Ubershit = function () {
     }, {
         key: 'addToMenu',
         value: function addToMenu(namespace, items) {
-            this.on('ready', function () {
+            this.on('ready menuChanged', function (e) {
                 this.menu.append(new MenuItem({ type: 'separator' }));
 
                 var subMenu = new Menu();

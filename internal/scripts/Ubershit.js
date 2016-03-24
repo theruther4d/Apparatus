@@ -24,27 +24,37 @@ class Ubershit {
         this._blurHidden = false;
         this._checkBlurPreference();
 
+        // Handles setup for the first load:
         this.on( 'ready', function() {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0];
         }.bind( this ) );
 
+        // Tear down our menu/tray when we're going to reload:
         this.on( 'willReload', function() {
             if( this._tray ) {
                 this._tray.destroy();
                 this._tray = null;
-                this.browserWindow = null;
             }
 
+            this.browserWindow = null;
             this.menu = null;
         }.bind( this ) );
 
+        // Rebuild menu/tray when we're done reloading:
         this.on( 'didReload', function() {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0];
+
+            // Let the widgets know we've changed the menu:
+            this.trigger( 'menuChanged' );
         }.bind( this ) );
     }
 
+
+    /**
+     * Checks for previously set user preferences.
+     */
     _checkBlurPreference() {
         const hideBlur = localStorage.getItem( 'hideBlurEffect' ) === 'true';
 
@@ -53,6 +63,7 @@ class Ubershit {
             document.documentElement.classList.add( 'no-blur' );
         }
     }
+
 
     /**
      * Returns the widget directory path.
@@ -64,6 +75,7 @@ class Ubershit {
         return WIDGET_DIR;
     }
 
+
     /**
      * Returns the output directory path.
      */
@@ -74,18 +86,24 @@ class Ubershit {
         return OUTPUT_DIR;
     }
 
+
     /**
      * Check if this instance contains an event by name.
+     *
+     * @param {string} eventName
      */
     _hasEvent( eventName ) {
         return this._events.hasOwnProperty( eventName );
     }
 
 
-    /**
-     * Bind an event by name:
+    /*
+     * Does the actual event attaching for .on()
+     *
+     * @param {string} eventName - a single event.
+     * @param {function} callBack
      */
-    on( eventName, callBack ) {
+    _attachEvent( eventName, callBack ) {
         if( !this._hasEvent( eventName ) ) {
             this._events[eventName] = [ callBack ];
             return;
@@ -95,7 +113,26 @@ class Ubershit {
     }
 
     /**
+     * Bind an event by name:
+     *
+     * @param {string} eventName - a single event, or multiple events separated by spaces \n.
+     * @param {function} callBack
+     */
+    on( eventName, callBack ) {
+        if( eventName.indexOf( ' ' ) > -1 ) {
+            eventName.split( ' ' ).forEach( function( name ) {
+                this._attachEvent( name, callBack );
+            }.bind( this ) );
+        } else {
+            this._attachEvent( eventName, callBack );
+        }
+    }
+
+
+    /**
      * Trigger the event by name:
+     *
+     * @param {string} eventName
      */
     trigger( eventName ) {
         if( !this._hasEvent( eventName ) ) {
@@ -103,7 +140,7 @@ class Ubershit {
         }
 
         this._events[eventName].forEach( ( callBack ) => {
-            callBack();
+            callBack( eventName );
         });
     }
 
@@ -175,7 +212,7 @@ class Ubershit {
      * Add items to the context menu.
      */
     addToMenu( namespace, items ) {
-        this.on( 'ready', function() {
+        this.on( 'ready menuChanged', function( e ) {
             this.menu.append( new MenuItem( { type: 'separator' } ) );
 
             const subMenu = new Menu();
@@ -191,6 +228,7 @@ class Ubershit {
             this._tray.setContextMenu( this.menu );
         }.bind( this ) );
     }
+
 
     /**
      * A wrapper around osascript, executes the file at a given interval.
@@ -212,6 +250,7 @@ class Ubershit {
         }, interval );
     }
 
+
     /**
      * Executes a script from a file at a specific interval.
      *
@@ -229,6 +268,7 @@ class Ubershit {
         }, interval );
     }
 
+
     /**
      * Executes a shell script.
      *
@@ -239,6 +279,7 @@ class Ubershit {
     exec( command, options, callback ) {
         exec( command, options, callback );
     }
+
 
     /*
      * Gets the current desktop walllpaper.
@@ -269,6 +310,7 @@ class Ubershit {
             }
         }.bind( this ), 2000 );
     }
+
 
     /**
      * Makes Blur Class publicly available.
