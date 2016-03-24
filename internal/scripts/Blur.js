@@ -87,6 +87,7 @@ proto._createOutputCanvas = function( reference ) {
     canvas.style.top = `${( this._blurAmt / 2 ) * -1}px`;
     canvas.style.left = `${( this._blurAmt / 2 ) * -1}px`;
     canvas.style.webkitFilter = `blur( ${this._blurAmt / 2}px )`;
+    canvas.style.transform = `translateZ( 0 )`;
     ctx.drawImage( reference, dimensions.left - 8, dimensions.top - 32, reference.width, reference.height, 0, 0, reference.width + ( this._blurAmt * 2 ), reference.height + ( this._blurAmt * 2 ) );
 
     return canvas;

@@ -135,7 +135,7 @@ git clone git@github.com:theruther4d/Ubershit.git
 cd Ubershit
 npm install
 ```
-#### 3. Run in development
+##### 3. Run in development
 ```sh
 electron .
 ```

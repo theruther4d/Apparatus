@@ -17,14 +17,31 @@ class Ubershit {
     constructor() {
         this._events = {};
         this.WIDGET_DIR = this._getWidgetDirPath();
+        this.OUTPUT_DIR = this._getOuputDirPath();
         this._commands = {};
         this._execs = {};
         this._blurs = [];
         this._blurHidden = false;
         this._checkBlurPreference();
+
         this.on( 'ready', function() {
             this._createTray();
-            this.browserWindow = browserWindow.getAllWindows()[0]
+            this.browserWindow = browserWindow.getAllWindows()[0];
+        }.bind( this ) );
+
+        this.on( 'willReload', function() {
+            if( this._tray ) {
+                this._tray.destroy();
+                this._tray = null;
+                this.browserWindow = null;
+            }
+
+            this.menu = null;
+        }.bind( this ) );
+
+        this.on( 'didReload', function() {
+            this._createTray();
+            this.browserWindow = browserWindow.getAllWindows()[0];
         }.bind( this ) );
     }
 
@@ -45,6 +62,16 @@ class Ubershit {
         WIDGET_DIR.splice( -1, 1 );
         WIDGET_DIR = `${WIDGET_DIR.join( '/' )}/widgets`
         return WIDGET_DIR;
+    }
+
+    /**
+     * Returns the output directory path.
+     */
+    _getOuputDirPath() {
+        let OUTPUT_DIR = __dirname.split( '/' );
+        OUTPUT_DIR.splice( -1, 1 );
+        OUTPUT_DIR = `${OUTPUT_DIR.join( '/' )}/dist`
+        return OUTPUT_DIR;
     }
 
     /**
@@ -85,6 +112,8 @@ class Ubershit {
      * Creates the tray icon and initial context menu.
      */
     _createTray() {
+        this._tray = new Tray( `${__dirname}/iconTemplate.png` );
+
         // Menu:
         this.menu = Menu.buildFromTemplate([
             {
@@ -138,7 +167,6 @@ class Ubershit {
         ]);
 
         // Create the notification bar icon:
-        this._tray = new Tray( `${__dirname}/iconTemplate.png` );
         this._tray.setContextMenu( this.menu );
     }
 
@@ -216,7 +244,7 @@ class Ubershit {
      * Gets the current desktop walllpaper.
      *
      * @return {string} wallPaper - the wallPaper URL
-    */
+     */
     _getwallPaper() {
         const output = String(
             $.NSWorkspace( 'sharedWorkspace' )(
@@ -230,7 +258,7 @@ class Ubershit {
 
     /*
      * Watches the desktop for background changes.
-    */
+     */
     _watchwallPaper() {
         return setInterval( function() {
             const newwallPaper = this._getwallPaper();
@@ -239,7 +267,7 @@ class Ubershit {
                 this._wallPaper = newwallPaper;
                 this._updateBlurs( this._wallPaper );
             }
-        }.bind( this ), 1 );
+        }.bind( this ), 2000 );
     }
 
     /**

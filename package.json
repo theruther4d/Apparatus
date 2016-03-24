@@ -20,6 +20,7 @@
     "osascript": "^1.2.0"
   },
   "devDependencies": {
+    "electron-prebuilt": "^0.37.2",
     "gulp-replace": "^0.5.4",
     "gulp-watch": "^4.3.5",
     "run-sequence": "^1.1.5"

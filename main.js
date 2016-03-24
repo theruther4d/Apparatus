@@ -164,6 +164,9 @@ app.on( 'ready', () => {
     });
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
+    mainWindow.webContents.openDevTools({
+        detach: true
+    });
     mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'ready' );` );
 
     const watcher = chokidar.watch( `${OUTPUT_DIR}`, {
@@ -173,10 +176,14 @@ app.on( 'ready', () => {
 
     watcher
         .on( 'change', ( path ) => {
+            mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'willReload' );` );
             mainWindow.reload();
+            mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'didReload' );` );
         })
         .on( 'add', ( path ) => {
+            mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'willReload' );` );
             mainWindow.reload();
+            mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'didReload' );` );
         });
 
     gulp.start( 'ubershit' );

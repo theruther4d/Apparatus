@@ -26,12 +26,29 @@ var Ubershit = function () {
 
         this._events = {};
         this.WIDGET_DIR = this._getWidgetDirPath();
+        this.OUTPUT_DIR = this._getOuputDirPath();
         this._commands = {};
         this._execs = {};
         this._blurs = [];
         this._blurHidden = false;
         this._checkBlurPreference();
+
         this.on('ready', function () {
+            this._createTray();
+            this.browserWindow = browserWindow.getAllWindows()[0];
+        }.bind(this));
+
+        this.on('willReload', function () {
+            if (this._tray) {
+                this._tray.destroy();
+                this._tray = null;
+                this.browserWindow = null;
+            }
+
+            this.menu = null;
+        }.bind(this));
+
+        this.on('didReload', function () {
             this._createTray();
             this.browserWindow = browserWindow.getAllWindows()[0];
         }.bind(this));
@@ -59,6 +76,19 @@ var Ubershit = function () {
             WIDGET_DIR.splice(-1, 1);
             WIDGET_DIR = WIDGET_DIR.join('/') + '/widgets';
             return WIDGET_DIR;
+        }
+
+        /**
+         * Returns the output directory path.
+         */
+
+    }, {
+        key: '_getOuputDirPath',
+        value: function _getOuputDirPath() {
+            var OUTPUT_DIR = __dirname.split('/');
+            OUTPUT_DIR.splice(-1, 1);
+            OUTPUT_DIR = OUTPUT_DIR.join('/') + '/dist';
+            return OUTPUT_DIR;
         }
 
         /**
@@ -111,6 +141,8 @@ var Ubershit = function () {
         value: function _createTray() {
             var _this = this;
 
+            this._tray = new Tray(__dirname + '/iconTemplate.png');
+
             // Menu:
             this.menu = Menu.buildFromTemplate([{
                 label: 'Open Widgets Folder',
@@ -158,7 +190,6 @@ var Ubershit = function () {
             }]);
 
             // Create the notification bar icon:
-            this._tray = new Tray(__dirname + '/iconTemplate.png');
             this._tray.setContextMenu(this.menu);
         }
 
@@ -247,7 +278,7 @@ var Ubershit = function () {
          * Gets the current desktop walllpaper.
          *
          * @return {string} wallPaper - the wallPaper URL
-        */
+         */
 
     }, {
         key: '_getwallPaper',
@@ -259,7 +290,7 @@ var Ubershit = function () {
 
         /*
          * Watches the desktop for background changes.
-        */
+         */
 
     }, {
         key: '_watchwallPaper',
@@ -271,7 +302,7 @@ var Ubershit = function () {
                     this._wallPaper = newwallPaper;
                     this._updateBlurs(this._wallPaper);
                 }
-            }.bind(this), 1);
+            }.bind(this), 2000);
         }
 
         /**
@@ -435,6 +466,7 @@ proto._createOutputCanvas = function (reference) {
     canvas.style.top = this._blurAmt / 2 * -1 + 'px';
     canvas.style.left = this._blurAmt / 2 * -1 + 'px';
     canvas.style.webkitFilter = 'blur( ' + this._blurAmt / 2 + 'px )';
+    canvas.style.transform = 'translateZ( 0 )';
     ctx.drawImage(reference, dimensions.left - 8, dimensions.top - 32, reference.width, reference.height, 0, 0, reference.width + this._blurAmt * 2, reference.height + this._blurAmt * 2);
 
     return canvas;
@@ -488,3 +520,17 @@ proto.update = function (wallPaper) {
 };
 
 window.Blur = Blur;
+// class Options {
+//     constructor() {
+//
+//     },
+//
+//     get( name ) {
+//         return localStorage.getItem( name );
+//     }
+//
+//     set( name, value ) {
+//         return localStorage.setItem( name, value );
+//     }
+// }
+"use strict";
