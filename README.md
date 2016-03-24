@@ -10,17 +10,22 @@ Ubershit compiles all `.html`, `.css`, and `.js` files from the `widgets` (`$use
 .
 ├── css
 |   ├── somefile.scss
-|   └── somefile.scss
-|   └── somefile.scss
+|   └── someOtherFile.scss
+|   └── evenAnotherFile.scss
 ├── gulpfile.js
 ├── index.haml
 ├── package.json
 ├── node_modules
 |   └── ...
-├── playbox             // compiled output
+|
+|
+| // compiled output /playbox is symlinked
+├── playbox
 |   ├── index.html
 |   └── scripts.js
 |   └── style.css
+|
+|
 ├── scripts
 |   ├── somefile.js
 |   └── somefile.js
@@ -37,6 +42,7 @@ Usage:
 ```javascript
 myImg.src = `${ubershit.WIDGET_DIR}/playbox/images/default.png`;
 ```
+---  
 
 #### `browserWindow`
 An electron [`browserWindow`](https://github.com/atom/electron/blob/master/docs/api/browser-window.md) instance. Useful in `menuItem` click callbacks.
@@ -51,8 +57,10 @@ click: ( item ) => {
     });
 }
 ```
+---  
 
 #### `addToMenu( namespace, items )`
+Adds your widget menu items to the tray context menu.
   * `namespace` string - the name of your widget. Items added will sit in the menu under this string.
   * `items` array - an array of objects, corresponds directly to [electron's MenuItem class.](https://github.com/atom/electron/blob/master/docs/api/menu-item.md)
 
@@ -61,7 +69,7 @@ Usage:
 ubershit.addToMenu( 'playbox', [
     {
         label: 'Item1',
-        click: ( menuItem, browserWindow ) => {
+        click: ( menuItem ) => {
             // do something
         }
     },
@@ -69,12 +77,13 @@ ubershit.addToMenu( 'playbox', [
         label: 'Item2',
         type: 'checkbox',
         checked: false,
-        click: ( menuItem, browserWindow ) => {
+        click: ( menuItem ) => {
             // do something
         }
     }
 ]);
 ```
+---  
 
 #### `command( file, callback, interval )`:
 A wrapper around [`node-osascript`](https://www.npmjs.com/package/node-osascript).  Takes a file containing osascript and executes it every number of milliseconds provided.
@@ -88,6 +97,7 @@ ubershit.command( `${WIDGET_DIR}/playbox/as/getTrack.applescript`, ( err, res ) 
     // do something
 }, 1000 );
 ```
+---  
 
 #### `exec( command, options, callback)`:
 A wrapper around node [`child_processes.exec`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback).
@@ -101,6 +111,7 @@ ubershit.exec( 'pwd', ( err, res ) => {
     // do something
 });
 ```
+---  
 
 #### `Blur( el, amt )`:
 A class for creating blurred backgrounds. Takes a wrapper element an appends a `<canvas>` with the portion of the desktop that sits behind the wrapper element.
@@ -111,24 +122,25 @@ Usage:
 ```javascript
 const myBlur = ubershit.blur( myWrapper );
 ```
+---  
 
 ## Building
-### Clone the repo:
+##### 1. Clone the repo:
 ```sh
 git clone git@github.com:theruther4d/Ubershit.git
 ```
 
-### Run npm install
+##### 2. Run npm install
 ```sh
 cd Ubershit
 npm install
 ```
-### Run in development
+#### 3. Run in development
 ```sh
 electron .
 ```
 
-### Package for production
+##### 4. Package for production
 We're using [`electron-packager`](https://www.npmjs.com/package/electron-packager). Check out the options on [npm](https://www.npmjs.com/package/electron-packager).
 ```sh
 npm install -g electron-packager
