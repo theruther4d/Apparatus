@@ -67,7 +67,7 @@ const generateWidgetBlobs = ( widgets, blob ) => {
 
 // File Globs
 const widgets = getWidgets();
-const HTML_GLOB = [`${__dirname}/includes/html/head.html`, ...generateWidgetBlobs( widgets, '*.html' ), `${__dirname}/includes/html/foot.html`];
+const HTML_GLOB = widgets.length ? [`${__dirname}/includes/html/head.html`, ...generateWidgetBlobs( widgets, '*.html' ), `${__dirname}/includes/html/foot.html`] :  [`${__dirname}/includes/html/head.html`, `${__dirname}/includes/html/noWidgets.html`, `${__dirname}/includes/html/foot.html`];
 const CSS_GLOB = [`${__dirname}/includes/css/style.css`, ...generateWidgetBlobs( widgets, '*.css' )];
 const SCRIPTS_GLOB = [`${__dirname}/includes/scripts/scripts.js`, ...generateWidgetBlobs( widgets, '*.js' )];
 const IMAGE_GLOB = `${__dirname}/includes/images/*`;
@@ -152,11 +152,7 @@ app.on( 'window-all-closed', () => {
 
 app.on( 'ready', () => {
     const electronScreen = electron.screen;
-    // const size = electronScreen.getPrimaryDisplay().workAreaSize;
     const size = electronScreen.getPrimaryDisplay().bounds;
-    // console.log( electronScreen.getPrimaryDisplay().bounds );
-    // console.log( electronScreen.getPrimaryDisplay().workAreaSize );
-    // Hide the dock icon:
     app.dock.hide();
 
     mainWindow = new BrowserWindow({
@@ -168,6 +164,8 @@ app.on( 'ready', () => {
         width: size.width,
         height: size.height
     });
+
+    gulp.start( 'apparatus' );
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
 
@@ -191,8 +189,6 @@ app.on( 'ready', () => {
             watcher = null;
         };
     });
-
-    gulp.start( 'apparatus' );
 
     mainWindow.on( 'close', () => {
         mainWindow.webContents.executeJavaScript( `window.navIcon.destroy(); window.navIcon = null` );

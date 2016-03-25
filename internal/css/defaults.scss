@@ -11,14 +11,16 @@ body {
     overflow: hidden;
     text-rendering: optimizeLegibility;
     font-smoothing: antialiased;
-    // background-color: blue !important;
+    font-family: system, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: normal;
+    z-index: 1;
+    position: relative;
 }
 
 /*canvas*/.apparatus-blur {
     z-index: -1;
     position: absolute;
     transition: opacity 0.25s ease;
-    // background: blue;
 
     &.hidden {
         opacity: 0;
@@ -37,4 +39,51 @@ body {
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
+}
+
+$nwText: darken( rgb( 255, 200, 100 ), 60% );
+
+.no-widgets {
+    display: block;
+    width: 400px;
+    height: 230px;
+    position: absolute;
+    top: 300px;
+    right: 0;
+    // bottom: 200px;
+    left: 0;
+    margin: auto;
+    text-align: center;
+    overflow: hidden;
+    padding: 40px;
+    color: $nwText;
+    border-radius: 5px;
+    background: rgba( 255, 255, 255, 0.5 );
+    box-shadow: 0 0 5px 5px rgba( 0, 0, 0, 0.05 ),
+                0 25px 20px -10px rgba( 0, 0, 0, 0.4 );
+
+    h1 {
+        font-weight: 200;
+        font-size: 24px;
+        position: relative;
+    }
+
+    p {
+        margin-top: 20px;
+        font-weight: 300;
+        font-size: 14px;
+        text-align: left;
+    }
+
+    strong {
+        display: block;
+        font-size: 10px;
+        margin-top: 10px;
+        color: rgba( $nwText, 0.7 );
+    }
+
+    img {
+        margin-top: 10px;
+        transform: translateZ( 0 );
+    }
 }

@@ -674,3 +674,7 @@ proto.update = function (wallPaper) {
 };
 
 window.Blur = Blur;
+'use strict';
+
+var nwWrapper = document.querySelector('.no-widgets');
+var nwBlur = apparatus.blur(nwWrapper);
