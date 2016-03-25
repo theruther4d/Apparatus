@@ -333,7 +333,8 @@ var Ubershit = function (_Events) {
                     document.documentElement.classList[classAction]('no-blur');
                 }
             }, {
-                type: 'separator'
+                type: 'separator',
+                id: 'separator'
             }, {
                 label: 'Quit Ubershit',
                 type: 'normal',
@@ -355,7 +356,7 @@ var Ubershit = function (_Events) {
         key: 'addToMenu',
         value: function addToMenu(namespace, items) {
             this.on('ready menuChanged', function (e) {
-                this.menu.append(new MenuItem({ type: 'separator' }));
+                // console.log( this.menu );
 
                 var subMenu = new Menu();
 
@@ -364,7 +365,8 @@ var Ubershit = function (_Events) {
                     subMenu.append(menuItem);
                 });
 
-                this.menu.append(new MenuItem({ label: namespace, submenu: subMenu }));
+                this.menu.insert(3, new MenuItem({ type: 'separator' }));
+                this.menu.insert(4, new MenuItem({ label: namespace, submenu: subMenu }));
 
                 // Refresh the menu:
                 this._tray.setContextMenu(this.menu);

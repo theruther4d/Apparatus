@@ -126,7 +126,8 @@ class Ubershit extends Events {
                 }
             },
             {
-                type: 'separator'
+                type: 'separator',
+                id: 'separator'
             },
             {
                 label: 'Quit Ubershit',
@@ -148,7 +149,7 @@ class Ubershit extends Events {
      */
     addToMenu( namespace, items ) {
         this.on( 'ready menuChanged', function( e ) {
-            this.menu.append( new MenuItem( { type: 'separator' } ) );
+            // console.log( this.menu );
 
             const subMenu = new Menu();
 
@@ -157,7 +158,8 @@ class Ubershit extends Events {
                 subMenu.append( menuItem );
             });
 
-            this.menu.append( new MenuItem( { label: namespace, submenu: subMenu } ) );
+            this.menu.insert( 3, new MenuItem( { type: 'separator' } ) );
+            this.menu.insert( 4, new MenuItem( { label: namespace, submenu: subMenu } ) );
 
             // Refresh the menu:
             this._tray.setContextMenu( this.menu );
