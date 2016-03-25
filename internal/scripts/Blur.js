@@ -2,7 +2,7 @@
 class Blur {
     constructor( el, blurAmt = 10, wallPaper, inject = true ) {
         this._target = el;
-        this._blurAmt = blurAmt * 2;
+        this._blurAmt = blurAmt * 4;
         this._visible = inject;
         this._outputCanvas( wallPaper, inject );
     }
@@ -23,10 +23,10 @@ proto._createDesktopReference = function( wallPaper, callback ) {
     // Setup:
     const canvas = document.createElement( 'canvas' );
     const ctx = canvas.getContext( '2d' );
-    const ubershit = document.getElementById( 'ubershit' );
+    const apparatus = document.getElementById( 'apparatus' );
     const img = document.createElement( 'img' );
     img.onload = () => {
-        const screenDimensions = ubershit.getBoundingClientRect();
+        const screenDimensions = apparatus.getBoundingClientRect();
         const imgDimensions = {
             width: img.naturalWidth,
             height: img.naturalHeight
@@ -60,7 +60,7 @@ proto._createDesktopReference = function( wallPaper, callback ) {
 */
 proto._switchTransition = function( e ) {
     this._ctx.clearRect(0, 0, this._dimensions.width + this._blurAmt, this._dimensions.height + this._blurAmt );
-    this._ctx.drawImage( this._reference, this._dimensions.left - 8, this._dimensions.top - 32, this._reference.width + this._blurAmt, this._reference.height + this._blurAmt, 0, 0, this._reference.width, this._reference.height );
+    this._ctx.drawImage( this._reference, this._dimensions.left - 7, this._dimensions.top + 19, this._reference.width + this._blurAmt, this._reference.height + this._blurAmt, 0, 0, this._reference.width, this._reference.height );
     this._canvas.classList.remove( 'hidden' );
     this._canvas.removeEventListener( 'transitionend', this._switchTransition.bind( this ) );
 };
@@ -87,12 +87,11 @@ proto._createOutputCanvas = function( reference ) {
 
     canvas.width = this._dimensions.width + ( this._blurAmt );
     canvas.height = this._dimensions.height + ( this._blurAmt );
-    canvas.classList.add( 'ubershit-blur' );
-    canvas.style.top = `${( this._blurAmt / 2 ) * -1}px`;
-    canvas.style.left = `${( this._blurAmt / 2 ) * -1}px`;
-    canvas.style.webkitFilter = `blur( ${this._blurAmt / 2}px )`;
-    canvas.style.transform = `translateZ( 0 )`;
-    ctx.drawImage( this._reference, this._dimensions.left - 8, this._dimensions.top - 32, this._reference.width, this._reference.height, 0, 0, this._reference.width + ( this._blurAmt * 2 ), this._reference.height + ( this._blurAmt * 2 ) );
+    canvas.classList.add( 'apparatus-blur' );
+    canvas.style.top = `${( this._blurAmt / 4 ) * -1}px`;
+    canvas.style.left = `${( this._blurAmt / 4 ) * -1}px`;
+    canvas.style.webkitFilter = `blur( ${this._blurAmt / 4}px )`;
+    ctx.drawImage( this._reference, this._dimensions.left - 7, this._dimensions.top + 19, this._reference.width, this._reference.height, 0, 0, this._reference.width + ( this._blurAmt * 4 ), this._reference.height + ( this._blurAmt * 4 ) );
 
     return canvas;
 };

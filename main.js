@@ -14,7 +14,7 @@ const fs = require( 'fs' );
 const gulp = require( 'gulp' );
 const concat = require( 'gulp-concat' );
 const rename = require( 'gulp-rename' );
-const insert = require( 'gulp-insert' );
+// const insert = require( 'gulp-insert' );
 const replace = require( 'gulp-replace' );
 const runSequence = require( 'run-sequence' );
 const watch = require( 'gulp-watch' );
@@ -27,6 +27,21 @@ const BASE_DIR = app.getPath( 'userData' );
 const WIDGET_DIR = `${BASE_DIR}/widgets`;
 const OUTPUT_DIR = `${BASE_DIR}/dist`;
 const NPM_DIR = `${BASE_DIR}/node_modules`;
+
+const mkDirIfNotExists = ( directory ) => {
+    if( !fs.existsSync( directory ) ) {
+        fs.mkdir( directory, ( err ) => {
+            if( err ) {
+                console.log( err );
+                return;
+            }
+        });
+    }
+};
+
+// Make the WIDGET_DIR and OUTPUT_DIR if they don't exist:
+mkDirIfNotExists( WIDGET_DIR );
+mkDirIfNotExists( OUTPUT_DIR );
 
 const getWidgets = () => {
     let widgets = [];
@@ -52,13 +67,14 @@ const generateWidgetBlobs = ( widgets, blob ) => {
 
 // File Globs
 const widgets = getWidgets();
-const HTML_GLOB = generateWidgetBlobs( widgets, '*.html' );
+const HTML_GLOB = [`${__dirname}/includes/html/head.html`, ...generateWidgetBlobs( widgets, '*.html' ), `${__dirname}/includes/html/foot.html`];
 const CSS_GLOB = [`${__dirname}/includes/css/style.css`, ...generateWidgetBlobs( widgets, '*.css' )];
 const SCRIPTS_GLOB = [`${__dirname}/includes/scripts/scripts.js`, ...generateWidgetBlobs( widgets, '*.js' )];
+const IMAGE_GLOB = `${__dirname}/includes/images/*`;
 
 // Gulp tasks:
-gulp.task( 'ubershit', () => {
-    runSequence( ['html', 'css', 'scripts'], 'stream' );
+gulp.task( 'apparatus', () => {
+    runSequence( ['html', 'css', 'scripts', 'images'], 'stream' );
 });
 
 gulp.task( 'stream', () => {
@@ -78,8 +94,6 @@ gulp.task( 'stream', () => {
 gulp.task( 'html', () => {
     return gulp.src( HTML_GLOB )
         .pipe( concat( 'index.html' ) )
-        .pipe( insert.prepend( fs.readFileSync( `${__dirname}/includes/html/head.html` ) ) )
-        .pipe( insert.append( fs.readFileSync( `${__dirname}/includes/html/foot.html` ) ) )
         .pipe( replace( 'WIDGET_DIR', BASE_DIR ) )
         .pipe( gulp.dest( OUTPUT_DIR ) );
 });
@@ -97,20 +111,10 @@ gulp.task( 'scripts', () => {
         .pipe( gulp.dest( OUTPUT_DIR ) );
 });
 
-const mkDirIfNotExists = ( directory ) => {
-    if( !fs.existsSync( directory ) ) {
-        fs.mkdir( directory, ( err ) => {
-            if( err ) {
-                console.log( err );
-                return;
-            }
-        });
-    }
-};
-
-// Make the WIDGET_DIR and OUTPUT_DIR if they don't exist:
-mkDirIfNotExists( WIDGET_DIR );
-mkDirIfNotExists( OUTPUT_DIR );
+gulp.task( 'images', () => {
+    return gulp.src( IMAGE_GLOB )
+        .pipe( gulp.dest( `${OUTPUT_DIR}/images` ) )
+});
 
 const makeNodeModuleSymlinks = ( modules ) => {
     modules.forEach( ( module ) => {
@@ -131,7 +135,7 @@ if( !fs.existsSync( NPM_DIR) ) {
             'nodobjc',
             'gulp',
             'gulp-concat',
-            'gulp-insert',
+            // 'gulp-insert',
             'gulp-rename',
             'gulp-replace',
             'gulp-run-sequence',
@@ -148,8 +152,10 @@ app.on( 'window-all-closed', () => {
 
 app.on( 'ready', () => {
     const electronScreen = electron.screen;
-    const size = electronScreen.getPrimaryDisplay().workAreaSize;
-
+    // const size = electronScreen.getPrimaryDisplay().workAreaSize;
+    const size = electronScreen.getPrimaryDisplay().bounds;
+    // console.log( electronScreen.getPrimaryDisplay().bounds );
+    // console.log( electronScreen.getPrimaryDisplay().workAreaSize );
     // Hide the dock icon:
     app.dock.hide();
 
@@ -164,26 +170,29 @@ app.on( 'ready', () => {
     });
 
     mainWindow.loadURL( `file://${OUTPUT_DIR}/index.html` );
-    mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'ready' );` );
 
-    const watcher = chokidar.watch( `${OUTPUT_DIR}`, {
-        ignoreInitial: true,
-        persistent: true
-    });
-
-    watcher
-        .on( 'change', ( path ) => {
-            mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'willReload' );` );
-            mainWindow.reload();
-            mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'didReload' );` );
-        })
-        .on( 'add', ( path ) => {
-            mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'willReload' );` );
-            mainWindow.reload();
-            mainWindow.webContents.executeJavaScript( `ubershit.trigger( 'didReload' );` );
+    mainWindow.webContents.on( 'did-finish-load', () => {
+        console.log( 'loaded' );
+        mainWindow.webContents.executeJavaScript( `apparatus.trigger( 'ready' );` );
+        let watcher = chokidar.watch( `${OUTPUT_DIR}`, {
+            ignoreInitial: true,
+            persistent: true
         });
 
-    gulp.start( 'ubershit' );
+        watcher.on( 'all', ( path ) => {
+            mainWindow.webContents.executeJavaScript( `apparatus.trigger( 'willReload' );` );
+            reload();
+        });
+
+        function reload() {
+            console.log( 'reloading' );
+            mainWindow.reload();
+            watcher.close();
+            watcher = null;
+        };
+    });
+
+    gulp.start( 'apparatus' );
 
     mainWindow.on( 'close', () => {
         mainWindow.webContents.executeJavaScript( `window.navIcon.destroy(); window.navIcon = null` );

@@ -11,20 +11,21 @@ body {
     overflow: hidden;
     text-rendering: optimizeLegibility;
     font-smoothing: antialiased;
-    background: transparent;
+    // background-color: blue !important;
 }
 
-/*canvas*/.ubershit-blur {
+/*canvas*/.apparatus-blur {
     z-index: -1;
     position: absolute;
     transition: opacity 0.25s ease;
+    // background: blue;
 
     &.hidden {
         opacity: 0;
     }
 }
 
-#ubershit {
+#apparatus {
     position: absolute;
     top: 0;
     right: 0;

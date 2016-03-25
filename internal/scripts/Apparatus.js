@@ -12,8 +12,8 @@ const fs = require( 'fs' );
 const $ = require( 'nodobjc' );
 const ffi = require( 'ffi' );
 
-/** Ubershit Class */
-class Ubershit extends Events {
+/** Apparatus Class */
+class Apparatus extends Events {
     constructor() {
         // Setup:
         super();
@@ -96,7 +96,7 @@ class Ubershit extends Events {
      * Creates the tray icon and initial context menu.
      */
     _createTray() {
-        this._tray = new Tray( `${__dirname}/iconTemplate.png` );
+        this._tray = new Tray( `${__dirname}/images/iconTemplate.png` );
 
         // Menu:
         this.menu = Menu.buildFromTemplate([
@@ -130,7 +130,7 @@ class Ubershit extends Events {
                 id: 'separator'
             },
             {
-                label: 'Quit Ubershit',
+                label: 'Quit Apparatus',
                 type: 'normal',
                 accelerator: 'Command+Q',
                 click: ( item ) => {
@@ -292,6 +292,6 @@ class Ubershit extends Events {
     }
 };
 
-window.ubershit = new Ubershit();
+window.apparatus = new Apparatus();
 
 $.framework( 'cocoa' );

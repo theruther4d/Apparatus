@@ -208,16 +208,16 @@ var fs = require('fs');
 var $ = require('nodobjc');
 var ffi = require('ffi');
 
-/** Ubershit Class */
+/** Apparatus Class */
 
-var Ubershit = function (_Events) {
-    _inherits(Ubershit, _Events);
+var Apparatus = function (_Events) {
+    _inherits(Apparatus, _Events);
 
-    function Ubershit() {
-        _classCallCheck(this, Ubershit);
+    function Apparatus() {
+        _classCallCheck(this, Apparatus);
 
         // Some helpful things:
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Ubershit).call(this));
+        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Apparatus).call(this));
         // Setup:
 
         _this.WIDGET_DIR = _this._getWidgetDirPath();
@@ -276,7 +276,7 @@ var Ubershit = function (_Events) {
      */
 
 
-    _createClass(Ubershit, [{
+    _createClass(Apparatus, [{
         key: '_getWidgetDirPath',
         value: function _getWidgetDirPath() {
             var WIDGET_DIR = __dirname.split('/');
@@ -307,7 +307,7 @@ var Ubershit = function (_Events) {
         value: function _createTray() {
             var _this2 = this;
 
-            this._tray = new Tray(__dirname + '/iconTemplate.png');
+            this._tray = new Tray(__dirname + '/images/iconTemplate.png');
 
             // Menu:
             this.menu = Menu.buildFromTemplate([{
@@ -336,7 +336,7 @@ var Ubershit = function (_Events) {
                 type: 'separator',
                 id: 'separator'
             }, {
-                label: 'Quit Ubershit',
+                label: 'Quit Apparatus',
                 type: 'normal',
                 accelerator: 'Command+Q',
                 click: function click(item) {
@@ -515,12 +515,12 @@ var Ubershit = function (_Events) {
         }
     }]);
 
-    return Ubershit;
+    return Apparatus;
 }(Events);
 
 ;
 
-window.ubershit = new Ubershit();
+window.apparatus = new Apparatus();
 
 $.framework('cocoa');
 'use strict';
@@ -537,7 +537,7 @@ var Blur = function Blur(el) {
     _classCallCheck(this, Blur);
 
     this._target = el;
-    this._blurAmt = blurAmt * 2;
+    this._blurAmt = blurAmt * 4;
     this._visible = inject;
     this._outputCanvas(wallPaper, inject);
 };
@@ -557,10 +557,10 @@ proto._createDesktopReference = function (wallPaper, callback) {
     // Setup:
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    var ubershit = document.getElementById('ubershit');
+    var apparatus = document.getElementById('apparatus');
     var img = document.createElement('img');
     img.onload = function () {
-        var screenDimensions = ubershit.getBoundingClientRect();
+        var screenDimensions = apparatus.getBoundingClientRect();
         var imgDimensions = {
             width: img.naturalWidth,
             height: img.naturalHeight
@@ -593,7 +593,7 @@ proto._createDesktopReference = function (wallPaper, callback) {
 */
 proto._switchTransition = function (e) {
     this._ctx.clearRect(0, 0, this._dimensions.width + this._blurAmt, this._dimensions.height + this._blurAmt);
-    this._ctx.drawImage(this._reference, this._dimensions.left - 8, this._dimensions.top - 32, this._reference.width + this._blurAmt, this._reference.height + this._blurAmt, 0, 0, this._reference.width, this._reference.height);
+    this._ctx.drawImage(this._reference, this._dimensions.left - 7, this._dimensions.top + 19, this._reference.width + this._blurAmt, this._reference.height + this._blurAmt, 0, 0, this._reference.width, this._reference.height);
     this._canvas.classList.remove('hidden');
     this._canvas.removeEventListener('transitionend', this._switchTransition.bind(this));
 };
@@ -619,12 +619,11 @@ proto._createOutputCanvas = function (reference) {
 
     canvas.width = this._dimensions.width + this._blurAmt;
     canvas.height = this._dimensions.height + this._blurAmt;
-    canvas.classList.add('ubershit-blur');
-    canvas.style.top = this._blurAmt / 2 * -1 + 'px';
-    canvas.style.left = this._blurAmt / 2 * -1 + 'px';
-    canvas.style.webkitFilter = 'blur( ' + this._blurAmt / 2 + 'px )';
-    canvas.style.transform = 'translateZ( 0 )';
-    ctx.drawImage(this._reference, this._dimensions.left - 8, this._dimensions.top - 32, this._reference.width, this._reference.height, 0, 0, this._reference.width + this._blurAmt * 2, this._reference.height + this._blurAmt * 2);
+    canvas.classList.add('apparatus-blur');
+    canvas.style.top = this._blurAmt / 4 * -1 + 'px';
+    canvas.style.left = this._blurAmt / 4 * -1 + 'px';
+    canvas.style.webkitFilter = 'blur( ' + this._blurAmt / 4 + 'px )';
+    ctx.drawImage(this._reference, this._dimensions.left - 7, this._dimensions.top + 19, this._reference.width, this._reference.height, 0, 0, this._reference.width + this._blurAmt * 4, this._reference.height + this._blurAmt * 4);
 
     return canvas;
 };

@@ -1,10 +1,10 @@
-# Ubershit
+# Apparatus
 The *other* mac app that lets you create and display widgets on your desktop. Build widgets using web languages that you already know and love, so you can focus on having fun.
 
-## [Download](https://github.com/theruther4d/Ubershit/releases/download/0.2.0/ubershit-darwin-x64.0.2.0.zip)
+## [Download](https://github.com/theruther4d/Apparatus/releases/download/0.2.0/apparatus-darwin-x64.0.2.0.zip)
 
 ## Creating Widgets
-Ubershit compiles all `.html`, `.css`, and `.js` files from the `widgets` (`$user/Library/Application Support/ubershit/widgets`) directory. The recommended setup during development is to symlink your widget's output directory to the Ubershit `widgets` directory. When distributing, you can package the output directory and name it after your widget. Users will drop the folder into their `widget` directory. Use whatever build tools, processes, and languages you like. As long as it compiles to valid `html`, `css`, or `javascript` you're all set. A typical file tree for a widget named 'playbox' may look like this:
+Apparatus compiles all `.html`, `.css`, and `.js` files from the `widgets` (`$user/Library/Application Support/apparatus/widgets`) directory. The recommended setup during development is to symlink your widget's output directory to the Apparatus `widgets` directory. When distributing, you can package the output directory and name it after your widget. Users will drop the folder into their `widget` directory. Use whatever build tools, processes, and languages you like. As long as it compiles to valid `html`, `css`, or `javascript` you're all set. A typical file tree for a widget named 'playbox' may look like this:
 
 ```
 .
@@ -33,10 +33,10 @@ Ubershit compiles all `.html`, `.css`, and `.js` files from the `widgets` (`$use
 ```
 
 ### Public Properties and Methods:
-The `ubershit` instance exposes a few helpful methods and properties to widgets.
+The `apparatus` instance exposes a few helpful methods and properties to widgets.
 
 #### `Preference( name, initialValue, callback, persistent = true)`
-Not under the ubershit namespace. A class for handling user preferences. Defaults to persistent (value will remain even after the application is closed.)
+Not under the apparatus namespace. A class for handling user preferences. Defaults to persistent (value will remain even after the application is closed.)
 * `name` - the name you'll use to set and retrieve the preference.
 * `initialValue` - the value that will be used if the user hasn't set this preference before.
 * `callback` - triggered when the value of the preference changes. Receives `newValue` as a parameter.
@@ -52,7 +52,7 @@ this._startWeekDay = new Preference( 'startWeekDay', 'Sunday', function( newValu
 }.bind( this ) );
 
 // We add the control to the menu that handles changing this value:
-ubershit.addToMenu( 'calendar', [
+apparatus.addToMenu( 'calendar', [
     {
         label: 'Start week on Monday',
         type: 'checkbox',
@@ -71,7 +71,7 @@ A constant containing the path to the widget directory.
 
 Usage:
 ```javascript
-myImg.src = `${ubershit.WIDGET_DIR}/playbox/images/default.png`;
+myImg.src = `${apparatus.WIDGET_DIR}/playbox/images/default.png`;
 ```
 ---  
 
@@ -97,7 +97,7 @@ Adds your widget menu items to the tray context menu.
 
 Usage:
 ```javascript
-ubershit.addToMenu( 'playbox', [
+apparatus.addToMenu( 'playbox', [
     {
         label: 'Item1',
         click: ( menuItem ) => {
@@ -124,7 +124,7 @@ A wrapper around [`node-osascript`](https://www.npmjs.com/package/node-osascript
 
 Usage:
 ```javascript
-ubershit.command( `${WIDGET_DIR}/playbox/as/getTrack.applescript`, ( err, res ) => {
+apparatus.command( `${WIDGET_DIR}/playbox/as/getTrack.applescript`, ( err, res ) => {
     // do something
 }, 1000 );
 ```
@@ -138,7 +138,7 @@ A wrapper around node [`child_processes.exec`](https://nodejs.org/api/child_proc
 
 Usage:
 ```javascript
-ubershit.exec( 'pwd', ( err, res ) => {
+apparatus.exec( 'pwd', ( err, res ) => {
     // do something
 });
 ```
@@ -151,19 +151,19 @@ A class for creating blurred backgrounds. Takes a wrapper element an appends a `
 
 Usage:
 ```javascript
-const myBlur = ubershit.blur( myWrapper );
+const myBlur = apparatus.blur( myWrapper );
 ```
 ---  
 
 ## Building
 ##### 1. Clone the repo:
 ```sh
-git clone git@github.com:theruther4d/Ubershit.git
+git clone git@github.com:theruther4d/Apparatus.git
 ```
 
 ##### 2. Run npm install
 ```sh
-cd Ubershit
+cd Apparatus
 npm install
 ```
 ##### 3. Run in development
@@ -175,5 +175,5 @@ electron .
 We're using [`electron-packager`](https://www.npmjs.com/package/electron-packager). Check out the options on [npm](https://www.npmjs.com/package/electron-packager).
 ```sh
 npm install -g electron-packager
-electron-packager ~/ubershit ubershit --platform=darwin --arch=x64 --version=0.36.10 --overwrite --ignore='/internal'
+electron-packager ~/apparatus apparatus --platform=darwin --arch=x64 --version=0.36.10 --overwrite --ignore='/internal'
 ```
