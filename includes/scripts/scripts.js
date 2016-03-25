@@ -108,16 +108,22 @@ var Preference = function (_Events) {
     _inherits(Preference, _Events);
 
     function Preference(name, value, callBack) {
+        var persistent = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
+
         _classCallCheck(this, Preference);
 
         var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Preference).call(this));
 
         _this._name = name;
         _this._callBack = callBack;
+        _this._persistent = persistent;
 
         // Check if we're already set in localStorage:
         var previousValue = localStorage.getItem(_this._name);
-        if (previousValue === null && (typeof previousValue === 'undefined' ? 'undefined' : _typeof(previousValue)) === 'object') {
+        if (!_this._persistent) {
+            _this.value = value;
+            _this._tmpVal = '' + value;
+        } else if (previousValue === null && (typeof previousValue === 'undefined' ? 'undefined' : _typeof(previousValue)) === 'object') {
             // set it up:
             _this.value = value;
         } else {
@@ -127,7 +133,8 @@ var Preference = function (_Events) {
 
         // Let everybody know when we change:
         _this.on('valueChanged', function () {
-            this._callBack(this.value);
+            var newValue = this._persistent ? this.value : this._tmpVal;
+            this._callBack(newValue);
         }.bind(_this));
         return _this;
     }
@@ -140,6 +147,10 @@ var Preference = function (_Events) {
     _createClass(Preference, [{
         key: 'value',
         get: function get() {
+            if (!this._persistent) {
+                return '' + this._tmpVal; // force it to be a string to match localStorage
+            }
+
             return localStorage.getItem(this._name);
         }
 
@@ -150,6 +161,16 @@ var Preference = function (_Events) {
          */
         ,
         set: function set(newValue) {
+            if (!this._persistent) {
+                if (newValue === this._tmpVal) {
+                    return '' + this._tmpVal; // force it to be a string to match localStorage
+                }
+
+                this._tmpVal = '' + newValue;
+                this.trigger('valueChanged');
+                return '' + this._tmpVal;
+            }
+
             if (newValue === this._value) {
                 return this._value;
             }
@@ -195,13 +216,17 @@ var Ubershit = function (_Events) {
     function Ubershit() {
         _classCallCheck(this, Ubershit);
 
+        // Some helpful things:
         var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Ubershit).call(this));
+        // Setup:
 
         _this.WIDGET_DIR = _this._getWidgetDirPath();
         _this.OUTPUT_DIR = _this._getOuputDirPath();
         _this._commands = {};
         _this._execs = {};
         _this._blurs = [];
+
+        // Setup our blur visibility preference:
         _this._blursVisible = new Preference('blursVisible', true, function (newValue) {
             var action = newValue === 'true' ? '_showBlurs' : '_hideBlurs';
             this[action]();
@@ -231,6 +256,17 @@ var Ubershit = function (_Events) {
 
             // Let the widgets know we've changed the menu:
             this.trigger('menuChanged');
+        }.bind(_this));
+
+        _this.on('ready didReload', function () {
+            // Setup our temporary preference for showing devTools:
+            this._devToolsVisible = new Preference('devToolsVisible', false, function (newValue) {
+                var action = newValue === 'true' ? 'openDevTools' : 'closeDevTools';
+
+                this.browserWindow.webContents[action]({
+                    detach: true
+                });
+            }.bind(this), false);
         }.bind(_this));
         return _this;
     }
@@ -283,13 +319,9 @@ var Ubershit = function (_Events) {
             }, {
                 label: 'Show Debug Console',
                 type: 'checkbox',
-                checked: false,
+                checked: this._devToolsVisible === 'true',
                 click: function click(item) {
-                    var action = item.checked ? 'openDevTools' : 'closeDevTools';
-
-                    _this2.browserWindow.webContents[action]({
-                        detach: true
-                    });
+                    _this2._devToolsVisible.value = item.checked;
                 }
             }, {
                 label: 'Hide blur effect.',

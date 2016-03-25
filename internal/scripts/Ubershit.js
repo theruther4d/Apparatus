@@ -15,12 +15,17 @@ const ffi = require( 'ffi' );
 /** Ubershit Class */
 class Ubershit extends Events {
     constructor() {
+        // Setup:
         super();
+
+        // Some helpful things:
         this.WIDGET_DIR = this._getWidgetDirPath();
         this.OUTPUT_DIR = this._getOuputDirPath();
         this._commands = {};
         this._execs = {};
         this._blurs = [];
+
+        // Setup our blur visibility preference:
         this._blursVisible = new Preference( 'blursVisible', true, function( newValue ) {
             const action = newValue === 'true' ? '_showBlurs' : '_hideBlurs';
             this[action]();
@@ -50,6 +55,17 @@ class Ubershit extends Events {
 
             // Let the widgets know we've changed the menu:
             this.trigger( 'menuChanged' );
+        }.bind( this ) );
+
+        this.on( 'ready didReload', function() {
+            // Setup our temporary preference for showing devTools:
+            this._devToolsVisible = new Preference( 'devToolsVisible', false, function( newValue ) {
+                const action = newValue === 'true' ? 'openDevTools' : 'closeDevTools';
+
+                this.browserWindow.webContents[action]({
+                    detach: true
+                });
+            }.bind( this ), false );
         }.bind( this ) );
     }
 
@@ -94,13 +110,9 @@ class Ubershit extends Events {
             {
                 label: 'Show Debug Console',
                 type: 'checkbox',
-                checked: false,
+                checked: this._devToolsVisible === 'true',
                 click: ( item ) => {
-                    const action = item.checked ? 'openDevTools' : 'closeDevTools';
-
-                    this.browserWindow.webContents[action]({
-                        detach: true
-                    });
+                    this._devToolsVisible.value = item.checked;
                 }
             },
             {

@@ -6,14 +6,18 @@
  * @param {function} callBack - Triggers when the value changes.
  */
 class Preference extends Events {
-    constructor( name, value, callBack ) {
+    constructor( name, value, callBack, persistent = true ) {
         super();
         this._name = name;
         this._callBack = callBack;
+        this._persistent = persistent;
 
         // Check if we're already set in localStorage:
         const previousValue = localStorage.getItem( this._name );
-        if( previousValue === null && typeof previousValue === 'object' ) {
+        if( !this._persistent ) {
+            this.value = value;
+            this._tmpVal = `${value}`;
+        } else if( previousValue === null && typeof previousValue === 'object' ) {
             // set it up:
             this.value = value;
         } else {
@@ -23,7 +27,8 @@ class Preference extends Events {
 
         // Let everybody know when we change:
         this.on( 'valueChanged', function() {
-            this._callBack( this.value );
+            const newValue = this._persistent ? this.value : this._tmpVal;
+            this._callBack( newValue );
         }.bind( this ) );
     }
 
@@ -32,6 +37,10 @@ class Preference extends Events {
      * Getter for value.
      */
     get value() {
+        if( !this._persistent ) {
+            return `${this._tmpVal}`;   // force it to be a string to match localStorage
+        }
+
         return localStorage.getItem( this._name );
     }
 
@@ -42,6 +51,16 @@ class Preference extends Events {
      * @param {any} newValue
      */
     set value( newValue ) {
+        if( !this._persistent ) {
+            if( newValue === this._tmpVal ) {
+                return `${this._tmpVal}`;   // force it to be a string to match localStorage
+            }
+
+            this._tmpVal = `${newValue}`;
+            this.trigger( 'valueChanged' );
+            return `${this._tmpVal}`;
+        }
+
         if( newValue === this._value ) {
             return this._value;
         }
