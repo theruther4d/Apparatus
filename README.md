@@ -35,6 +35,37 @@ Ubershit compiles all `.html`, `.css`, and `.js` files from the `widgets` (`$use
 ### Public Properties and Methods:
 The `ubershit` instance exposes a few helpful methods and properties to widgets.
 
+#### `Preference( name, initialValue, callback, persistent = true)`
+Not under the ubershit namespace. A class for handling user preferences. Defaults to persistent (value will remain even after the application is closed.)
+* `name` - the name you'll use to set and retrieve the preference.
+* `initialValue` - the value that will be used if the user hasn't set this preference before.
+* `callback` - triggered when the value of the preference changes. Receives `newValue` as a parameter.
+* `persistent` - defaults to `true`. Set to `false` if you want the preference to behave as a session variable.
+
+Usage:
+```javascript
+// For example, in a calendar widget, we create a preference to store
+// which day of the week the calendar should start with:
+this._startWeekDay = new Preference( 'startWeekDay', 'Sunday', function( newValue ) {
+    // This will re-run any time the value of the preference changes:
+    this._createCalendar();
+}.bind( this ) );
+
+// We add the control to the menu that handles changing this value:
+ubershit.addToMenu( 'calendar', [
+    {
+        label: 'Start week on Monday',
+        type: 'checkbox',
+        checked: this._startWeekDay.value === 'Monday',
+        click: ( item ) => {
+            this._startWeekDay.value = item.checked ? 'Monday' : 'Sunday';
+        }
+    }
+])
+```
+---  
+
+
 #### `WIDGET_DIR`
 A constant containing the path to the widget directory.
 
