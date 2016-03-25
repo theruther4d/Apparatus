@@ -149,8 +149,6 @@ class Ubershit extends Events {
      */
     addToMenu( namespace, items ) {
         this.on( 'ready menuChanged', function( e ) {
-            // console.log( this.menu );
-
             const subMenu = new Menu();
 
             items.forEach( ( item ) => {

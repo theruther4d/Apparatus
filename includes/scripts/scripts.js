@@ -356,8 +356,6 @@ var Ubershit = function (_Events) {
         key: 'addToMenu',
         value: function addToMenu(namespace, items) {
             this.on('ready menuChanged', function (e) {
-                // console.log( this.menu );
-
                 var subMenu = new Menu();
 
                 items.forEach(function (item) {
@@ -590,40 +588,43 @@ proto._createDesktopReference = function (wallPaper, callback) {
     img.src = wallPaper;
 };
 
-/*
+/**
+ * Handles fading in the <canvas> after it's been redraws.
+*/
+proto._switchTransition = function (e) {
+    this._ctx.clearRect(0, 0, this._dimensions.width + this._blurAmt, this._dimensions.height + this._blurAmt);
+    this._ctx.drawImage(this._reference, this._dimensions.left - 8, this._dimensions.top - 32, this._reference.width + this._blurAmt, this._reference.height + this._blurAmt, 0, 0, this._reference.width, this._reference.height);
+    this._canvas.classList.remove('hidden');
+    this._canvas.removeEventListener('transitionend', this._switchTransition.bind(this));
+};
+
+/**
  * Creates a <canvas> element representing the portion of the desktop behind the target element.
  *
  * @param {DOM el} reference - the full representation of the desktop to slice from.
  * @return {DOM el} canvas - the <canvas> representation of the desktop.
 */
 proto._createOutputCanvas = function (reference) {
-    var dimensions = this._target.getBoundingClientRect();
+    this._dimensions = this._target.getBoundingClientRect();
+    this._reference = reference;
 
     if (this._ctx) {
+        this._canvas.addEventListener('transitionend', this._switchTransition.bind(this));
         this._canvas.classList.add('hidden');
-
-        setTimeout(function () {
-            this._ctx.clearRect(0, 0, dimensions.width + this._blurAmt, dimensions.height + this._blurAmt);
-            this._ctx.drawImage(reference, dimensions.left - 8, dimensions.top - 32, reference.width + this._blurAmt, reference.height + this._blurAmt, 0, 0, reference.width, reference.height);
-        }.bind(this), 500);
-
-        setTimeout(function () {
-            this._canvas.classList.remove('hidden');
-        }.bind(this), 750);
         return;
     }
 
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
 
-    canvas.width = dimensions.width + this._blurAmt;
-    canvas.height = dimensions.height + this._blurAmt;
+    canvas.width = this._dimensions.width + this._blurAmt;
+    canvas.height = this._dimensions.height + this._blurAmt;
     canvas.classList.add('ubershit-blur');
     canvas.style.top = this._blurAmt / 2 * -1 + 'px';
     canvas.style.left = this._blurAmt / 2 * -1 + 'px';
     canvas.style.webkitFilter = 'blur( ' + this._blurAmt / 2 + 'px )';
     canvas.style.transform = 'translateZ( 0 )';
-    ctx.drawImage(reference, dimensions.left - 8, dimensions.top - 32, reference.width, reference.height, 0, 0, reference.width + this._blurAmt * 2, reference.height + this._blurAmt * 2);
+    ctx.drawImage(this._reference, this._dimensions.left - 8, this._dimensions.top - 32, this._reference.width, this._reference.height, 0, 0, this._reference.width + this._blurAmt * 2, this._reference.height + this._blurAmt * 2);
 
     return canvas;
 };
@@ -665,9 +666,7 @@ proto.hide = function () {
 proto.show = function () {
     this._canvas.classList.add('hidden');
     this._target.appendChild(this._canvas);
-    setTimeout(function () {
-        this._canvas.classList.remove('hidden');
-    }.bind(this), 350);
+    this._canvas.classList.remove('hidden');
     this._visible = true;
 };
 
